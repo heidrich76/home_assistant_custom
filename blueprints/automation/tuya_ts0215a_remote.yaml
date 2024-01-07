@@ -1,0 +1,54 @@
+blueprint:
+  name: Actions for TuYa TS0215A remote device
+  description: When a button is pressed, the defined actions will be executed.
+  domain: automation
+  source_url: https://github.com/heidrich76/home_assistant_custom/blob/devel/blueprints/automation/tuya_ts0215a_remote.yaml
+  input:
+    remote:
+      name: TuYa alarm remote
+      description: Please select TuYa alarm remote device.
+      selector:
+        entity:
+          domain: sensor
+          multiple: false
+    action_1:
+      name: Button A / Arm Day Zones
+      description: Action for Button A / Arm Day Zones
+      default: []
+      selector:
+        action: {}
+    action_2:
+      name: Button B / Disarm
+      description: Action for Button B / Disarm
+      default: []
+      selector:
+        action: {}
+    action_3:
+      name: Button 0 / SOS / Emergency
+      description: Action for Button 0 / SOS / Emergency
+      default: []
+      selector:
+        action: {}
+    action_4:
+      name: Button 1 / Arm All Zones
+      description: Action for Button 1 / Arm All Zones
+      default: []
+      selector:
+        action: {}
+trigger:
+  - platform: state
+    entity_id:
+      - !input remote
+condition: []
+action:
+  - choose:
+      - conditions: "{{ trigger.to_state.state == 'arm_day_zones' }}"
+        sequence: !input action_1
+      - conditions: "{{ trigger.to_state.state == 'disarm' }}"
+        sequence: !input action_2
+      - conditions: "{{ trigger.to_state.state == 'emergency' }}"
+        sequence: !input action_3
+      - conditions: "{{ trigger.to_state.state == 'arm_all_zones' }}"
+        sequence: !input action_4
+mode: parallel
+max: 10
