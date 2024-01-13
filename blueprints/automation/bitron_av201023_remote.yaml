@@ -13,26 +13,26 @@ blueprint:
             - sensor
           multiple: false
     action_1:
-      name: 4 Points / Brightness Step Down
-      description: Action for 4 Points / Brightness Step Down
+      name: 1 Point / Brightness Step Up
+      description: Action for 1 Point / Brightness Step Up
       default: []
       selector:
         action: {}
     action_2:
-      name: 3 Points / Off
-      description: Action for 3 Points / Off
-      default: []
-      selector:
-        action: {}
-    action_3:
       name: 2 Points / On
       description: Action for 2 Points / On
       default: []
       selector:
         action: {}
+    action_3:
+      name: 3 Points / Off
+      description: Action for 3 Points / Off
+      default: []
+      selector:
+        action: {}
     action_4:
-      name: 1 Point / Brightness Step Up
-      description: Action for 1 Point / Brightness Step Up
+      name: 4 Points / Brightness Step Down
+      description: Action for 4 Points / Brightness Step Down
       default: []
       selector:
         action: {}
@@ -43,13 +43,13 @@ trigger:
 condition: []
 action:
   - choose:
-      - conditions: "{{ trigger.to_state.state == 'brightness_step_down' }}"
-        sequence: !input action_1
-      - conditions: "{{ trigger.to_state.state == 'off' }}"
-        sequence: !input action_2
-      - conditions: "{{ trigger.to_state.state == 'on' }}"
-        sequence: !input action_3
       - conditions: "{{ trigger.to_state.state == 'brightness_step_up' }}"
+        sequence: !input action_1
+      - conditions: "{{ trigger.to_state.state == 'on' }}"
+        sequence: !input action_2
+      - conditions: "{{ trigger.to_state.state == 'off' }}"
+        sequence: !input action_3
+      - conditions: "{{ trigger.to_state.state == 'brightness_step_down' }}"
         sequence: !input action_4
 mode: parallel
 max: 10
