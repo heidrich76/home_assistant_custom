@@ -27,3 +27,16 @@ This custom card shows the photos and videos stored in a media folder in a card.
 HACS is not supported yet. For manual installation, copy the card into a folder named 'www' as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
 
 Here is a screenshot:
+
+<img src="docs/Example-Gallery.png" width="300px"/>
+
+There is currently also no graphical editor. So you have to add and configure the card via yaml.
+
+Example:
+
+```
+type: custom:simple-gallery-card
+media_content_id: media-source://media_source/local/snapshots/
+title: Snapshots
+page_size: 4
+```
