@@ -1,0 +1,26 @@
+{
+  "ui": {
+    "card": {
+      "ems_program_card": {
+        "new": "Neu",
+        "delete": "Löschen",
+        "change": "Ändern",
+        "advice": "Wähle rote Schaltpunkte zum Anpassen aus",
+        "ems_read": "EMS lesen",
+        "ems_write": "EMS schreiben",
+        "undo": "Rückgängig",
+        "reset": "Zurücksetzen",
+        "ems_success": "Zugriff auf EMS-Bus erfolgreich",
+        "error": {
+          "no_program": "Kein Programm verfügbar (zuerst EMS lesen)",
+          "ems_no_response": "EMS-Bus reagiert nicht (evtl. Timeout-Problem)"
+        },
+        "editor": {
+          "title": "Titel",
+          "entity": "Entität",
+          "help_text": "Wähle eine Entität, welche Schaltpunkte eines EMS-Programms enthält"
+        }
+      }
+    }
+  }
+}

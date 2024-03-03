@@ -1,0 +1,26 @@
+{
+  "ui": {
+    "card": {
+      "ems_program_card": {
+        "new": "New",
+        "delete": "Delete",
+        "change": "Change",
+        "advice": "Select a red switch time for adaptation",
+        "ems_read": "Read EMS",
+        "ems_write": "Write EMS",
+        "undo": "Undo",
+        "reset": "Reset",
+        "ems_success": "Accessing EMS bus successful",
+        "error": {
+          "no_program": "No program was read (Read EMS first)",
+          "ems_no_response": "EMS bus did not respond (e.g., timeout issues)"
+        },
+        "editor": {
+          "title": "Title",
+          "entity": "Entity",
+          "help_text": "Pick an entity, which contains switch times of an EMS program"
+        }
+      }
+    }
+  }
+}
