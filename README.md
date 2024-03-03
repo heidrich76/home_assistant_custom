@@ -62,8 +62,10 @@ HACS is not supported yet. For manual installation do the following:
 - Add the main card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program/ems-program-card.js?v=1`.
 - Increase version count if you update the card!
 
+> [!WARNING] 
+> Using this card, you may modify switch times of your heating system. You do this on your own risk. The card was only tested using my own heating system and was not tested with any other brands or types. I'm not liable for any issues this may cause. So, be aware that you are using the card on your own risk!
 
-Here is a screenshot:
+Here is a screenshot of the card:
 
 <img src="docs/Example-EMS-Program.png" width="400px"/>
 
