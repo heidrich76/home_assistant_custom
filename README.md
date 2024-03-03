@@ -26,13 +26,13 @@ This custom card shows the photos and videos stored in a media folder in a card.
 
 HACS is not supported yet. For manual installation do the following: 
 - Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/www/simple-gallery-card.js).
-- Copy the card into a folder named 'www' as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
+- Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
 - Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/simple-gallery-card.js?v1`.
 - Increase version count if you update the card!
 
 Here is a screenshot:
 
-<img src="docs/Example-Gallery.png" width="300px"/>
+<img src="docs/Example-Gallery.png" width="400px"/>
 
 There is currently also no graphical editor. So you have to add and configure the card via yaml.
 
@@ -49,7 +49,7 @@ page_size: 4
 
 This custom card is able to change an EMS switch time program communicating with an EMS-ESP device via Home Assistant. Check https://github.com/emsesp/EMS-ESP32 for more details on how to obtain the device and the software:
 
-<cite>EMS-ESP is an open-source firmware for the Espressif ESP32 microcontroller that communicates with EMS (Energy Management System) based equipment from manufacturers like Bosch, Buderus, Nefit, Junkers, Worcester and Sieger. It requires a small gateway circuit to interface with the EMS bus which can be purchased from https://bbqkees-electronics.nl or custom built.</cite>
+> EMS-ESP is an open-source firmware for the Espressif ESP32 microcontroller that communicates with EMS (Energy Management System) based equipment from manufacturers like Bosch, Buderus, Nefit, Junkers, Worcester and Sieger. It requires a small gateway circuit to interface with the EMS bus which can be purchased from https://bbqkees-electronics.nl or custom built.
 
 You may:
 - Read the EMS bus for retrieving the switch times of a program (accessed via a corresponding EMS-ESP entity).
@@ -58,14 +58,14 @@ You may:
 
 HACS is not supported yet. For manual installation do the following: 
 - Download the whole [folder](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fheidrich76%2Fhome_assistant_custom%2Ftree%2Fmain%2Fwww%2Fems-program).
-- Unzip the folder into a folder named 'www/ems-program' as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)). **Important: Check that the name of the folder is exactly as written before!** 
+- Unzip the folder into a folder named `www/ems-program` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)). **Important: Check that the name of the folder is exactly as written before!** 
 - Add the main card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program/ems-program-card.js?v=1`.
 - Increase version count if you update the card!
 
 
 Here is a screenshot:
 
-<img src="docs/Example-EMS-Program.png" width="300px"/>
+<img src="docs/Example-EMS-Program.png" width="400px"/>
 
 - Switch times are red dots.
 - Blue line is old program, brown is new one.
