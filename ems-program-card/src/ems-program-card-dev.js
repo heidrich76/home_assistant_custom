@@ -70,6 +70,7 @@ class EmsProgramCard extends LitElement {
       statusMessage: { type: String },
       dayIds: { type: Array },
       dayNames: { type: Array },
+      isDebugMode: { type: Boolean }
     };
   }
 
@@ -90,6 +91,10 @@ class EmsProgramCard extends LitElement {
       state: true,
       idx: -1,
     };
+
+    // Checks whether program runs in debug mode
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDebugMode = urlParams.has('debug') && urlParams.get('debug') === '1';
   }
 
   // Handle all config parameters
@@ -148,8 +153,8 @@ class EmsProgramCard extends LitElement {
     return html`<ha-card header="${this.config.title}">
       <div class="card-content">
         <div class="row">
-          <ha-select
-            naturalmenuwidth
+          <ha-select style="width: 200px;"
+            .naturalmenuwidth=${false}
             @change="${(e) => {
         this.switchtime.day = e.target.value;
       }}"
@@ -288,9 +293,6 @@ class EmsProgramCard extends LitElement {
         </div>
 
         <div class="row message">
-          ${this.isRunning
-        ? html`<ha-circular-progress indeterminate></ha-circular-progress>`
-        : html``}
           ${this.statusMessage}
         </div>
       </div>
@@ -338,7 +340,9 @@ class EmsProgramCardEditor extends LitElement {
       this.entityIdList = Object.keys(hass.states).filter((key) =>
         key.startsWith("text.")
       );
-      console.info(this.entityIdList);
+      if (this.isDebugMode) {
+        console.info(this.entityIdList);
+      }
     }
   }
 

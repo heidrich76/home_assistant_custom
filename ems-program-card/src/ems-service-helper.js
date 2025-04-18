@@ -1,7 +1,10 @@
-import { localize } from "./ems-card-helper.js?v=3";
+import { loadTranslations, localize } from "./ems-card-helper.js";
 
 // Access the EMS bus: writing bus input und collecting bus responses
 async function accessEms(card, busInput, stopResponse = undefined) {
+  // Set language
+  loadTranslations(card._hass.locale.language)
+
   // Set maximum seconds for bus response
   const maxMs = 20000;
   const globalStartTime = Date.now();
@@ -149,7 +152,9 @@ function setStateAttribute(card, data) {
       attributes: attrObj,
     })
     .then((res) => {
-      console.info(res);
+      if (card.isDebugMode) {
+        console.info(res);
+      }
     })
     .catch((err) => {
       console.error(err);
@@ -175,7 +180,9 @@ export function loadProgram(card) {
   }
   const out = stateObj.attributes["program"];
   if (out) {
-    console.log(out);
+    if (card.isDebugMode) {
+      console.log(out);
+    }
     card.program = parseProgram(out.old, card.dayIds);
     card.programNew = parseProgram(out.new, card.dayIds);
   }
@@ -211,7 +218,9 @@ export function readFromEms(card) {
   const stopResponse = "not_set";
   accessEms(card, busInput, stopResponse).then((out) => {
     card.statusMessage = localize(out.message);
-    console.info(out);
+    if (card.isDebugMode) {
+      console.info(out);
+    }
     if (out.bus) {
       card.program = parseProgram(out.bus, card.dayIds);
       card.programNew = cloneProgram(card.dayIds, card.program);
@@ -228,8 +237,10 @@ export function writeToEms(card) {
   // Convert programs (old and new) to EMS bus format
   const printedProgram = printEmsProgram(card.program, card.dayIds);
   const printedProgramNew = printEmsProgram(card.programNew, card.dayIds);
-  console.info(printedProgram);
-  console.info(printedProgramNew);
+  if (card.isDebugMode) {
+    console.info(printedProgram);
+    console.info(printedProgramNew);
+  }
 
   // Calculate difference of programs
   let delta = printedProgramNew.filter((x) => !printedProgram.includes(x));
@@ -247,12 +258,16 @@ export function writeToEms(card) {
       )
     );
   }
-  console.info(delta);
+  if (card.isDebugMode) {
+    console.info(delta);
+  }
 
   // Write delta to EMS bus
   accessEms(card, delta).then((out) => {
     card.statusMessage = localize(out.message);
-    console.info(out);
+    if (card.isDebugMode) {
+      console.info(out);
+    }
     if (out.bus) {
       card.program = cloneProgram(card.dayIds, card.programNew);
       storeProgram(card);
@@ -298,8 +313,6 @@ export function addSwitchtime(program, switchtime) {
       }
     }
   }
-
-  console.info(program);
 }
 
 // Removes an entry from the list of entries for a certain day
@@ -310,6 +323,4 @@ export function removeSwitchtime(program, switchtime) {
 
   let stList = program[switchtime.day];
   stList.splice(switchtime.idx, 1);
-
-  console.info(program);
 }
