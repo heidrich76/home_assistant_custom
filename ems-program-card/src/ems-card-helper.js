@@ -2,6 +2,38 @@ import en from './translations/en.json';
 import de from './translations/de.json';
 
 
+// Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
+// Partially allows for loading ha custom elements, such as checkbox
+async function loadCustomElements() {
+  // Includes ha-checkbox and ha-progress-spinner
+  if (!customElements.get("ha-panel-config")) {
+    await customElements.whenDefined("partial-panel-resolver");
+    const ppr = document.createElement("partial-panel-resolver");
+    ppr.hass = {
+      panels: [
+        {
+          url_path: "tmp",
+          component_name: "config",
+        },
+      ],
+    };
+    ppr._updateRoutes();
+    await ppr.routerOptions.routes.tmp.load();
+    await customElements.whenDefined("ha-panel-config");
+    const dtr = document.createElement("ha-panel-config");
+    await dtr.routerOptions.routes.automation.load();
+  }
+  if (!window.cardHelpers) {
+    window.cardHelpers = await window.loadCardHelpers();
+  }
+  // Includes ha-time-input
+  if (!customElements.get("ha-time-input")) {
+    window.cardHelpers.createRowElement({ type: "time-entity" });
+  }
+}
+await loadCustomElements();
+
+
 // Load language for localization of card
 const translations = { en, de };
 let langDict = en;

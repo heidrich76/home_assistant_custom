@@ -10,62 +10,6 @@ const de = {
   ui,
 };
 
-// Import language files to JS
-
-// Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
-// Partially allows for loading ha custom elements, such as checkbox
-async function loadCustomElements$1() {
-  // Includes ha-checkbox and ha-progress-spinner
-  if (!customElements.get("ha-panel-config")) {
-    await customElements.whenDefined("partial-panel-resolver");
-    const ppr = document.createElement("partial-panel-resolver");
-    ppr.hass = {
-      panels: [
-        {
-          url_path: "tmp",
-          component_name: "config",
-        },
-      ],
-    };
-    ppr._updateRoutes();
-    await ppr.routerOptions.routes.tmp.load();
-    await customElements.whenDefined("ha-panel-config");
-    const dtr = document.createElement("ha-panel-config");
-    await dtr.routerOptions.routes.automation.load();
-  }
-  if (!window.cardHelpers) {
-    window.cardHelpers = await window.loadCardHelpers();
-  }
-  // Includes ha-time-input
-  if (!customElements.get("ha-time-input")) {
-    window.cardHelpers.createRowElement({ type: "time-entity" });
-  }
-}
-await loadCustomElements$1();
-
-// Load language for localization of card
-let translations$1 = { lang: "en", data: en };
-async function loadTranslations$1(lang = "en") {
-  const availableTranslations = { en, de };
-  translations$1.data = availableTranslations[lang] || availableTranslations["en"];
-}
-await loadTranslations$1();
-
-// Localizes an id to supported languages
-function localize$1(label) {
-  let value = undefined;
-  try {
-    value = label.split(".").reduce((obj, key) => obj[key], translations$1.data);
-  } catch (error) { }
-  if (value && typeof value === "string") {
-    return value;
-  } else {
-    return label;
-  }
-}
-
-// Import language files to JS
-
 // Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
 // Partially allows for loading ha custom elements, such as checkbox
 async function loadCustomElements() {
@@ -97,19 +41,19 @@ async function loadCustomElements() {
 }
 await loadCustomElements();
 
+
 // Load language for localization of card
-let translations = { lang: "en", data: en };
-async function loadTranslations(lang = "en") {
-  const availableTranslations = { en, de };
-  translations.data = availableTranslations[lang] || availableTranslations["en"];
+const translations = { en, de };
+let langDict = en;
+function loadTranslations(lang = "en") {
+  langDict = translations[lang] || translations["en"];
 }
-await loadTranslations();
 
 // Localizes an id to supported languages
 function localize(label) {
   let value = undefined;
   try {
-    value = label.split(".").reduce((obj, key) => obj[key], translations.data);
+    value = label.split(".").reduce((obj, key) => obj[key], langDict);
   } catch (error) { }
   if (value && typeof value === "string") {
     return value;
@@ -120,6 +64,9 @@ function localize(label) {
 
 // Access the EMS bus: writing bus input und collecting bus responses
 async function accessEms(card, busInput, stopResponse = undefined) {
+  // Set language
+  loadTranslations(card._hass.locale.language);
+
   // Set maximum seconds for bus response
   const maxMs = 20000;
   const globalStartTime = Date.now();
@@ -267,7 +214,9 @@ function setStateAttribute(card, data) {
       attributes: attrObj,
     })
     .then((res) => {
-      console.info(res);
+      if (card.isDebugMode) {
+        console.info(res);
+      }
     })
     .catch((err) => {
       console.error(err);
@@ -293,7 +242,9 @@ function loadProgram(card) {
   }
   const out = stateObj.attributes["program"];
   if (out) {
-    console.log(out);
+    if (card.isDebugMode) {
+      console.log(out);
+    }
     card.program = parseProgram(out.old, card.dayIds);
     card.programNew = parseProgram(out.new, card.dayIds);
   }
@@ -329,7 +280,9 @@ function readFromEms(card) {
   const stopResponse = "not_set";
   accessEms(card, busInput, stopResponse).then((out) => {
     card.statusMessage = localize(out.message);
-    console.info(out);
+    if (card.isDebugMode) {
+      console.info(out);
+    }
     if (out.bus) {
       card.program = parseProgram(out.bus, card.dayIds);
       card.programNew = cloneProgram(card.dayIds, card.program);
@@ -346,8 +299,10 @@ function writeToEms(card) {
   // Convert programs (old and new) to EMS bus format
   const printedProgram = printEmsProgram(card.program, card.dayIds);
   const printedProgramNew = printEmsProgram(card.programNew, card.dayIds);
-  console.info(printedProgram);
-  console.info(printedProgramNew);
+  if (card.isDebugMode) {
+    console.info(printedProgram);
+    console.info(printedProgramNew);
+  }
 
   // Calculate difference of programs
   let delta = printedProgramNew.filter((x) => !printedProgram.includes(x));
@@ -365,12 +320,16 @@ function writeToEms(card) {
       )
     );
   }
-  console.info(delta);
+  if (card.isDebugMode) {
+    console.info(delta);
+  }
 
   // Write delta to EMS bus
   accessEms(card, delta).then((out) => {
     card.statusMessage = localize(out.message);
-    console.info(out);
+    if (card.isDebugMode) {
+      console.info(out);
+    }
     if (out.bus) {
       card.program = cloneProgram(card.dayIds, card.programNew);
       storeProgram(card);
@@ -416,8 +375,6 @@ function addSwitchtime(program, switchtime) {
       }
     }
   }
-
-  console.info(program);
 }
 
 // Removes an entry from the list of entries for a certain day
@@ -428,8 +385,6 @@ function removeSwitchtime(program, switchtime) {
 
   let stList = program[switchtime.day];
   stList.splice(switchtime.idx, 1);
-
-  console.info(program);
 }
 
 // Constants for SVG
@@ -611,7 +566,8 @@ class EmsProgramCard extends LitElement {
       isSelected: { type: Boolean },
       statusMessage: { type: String },
       dayIds: { type: Array },
-      dayNames: { type: Array }
+      dayNames: { type: Array },
+      isDebugMode: { type: Boolean }
     };
   }
   // Create card
@@ -629,6 +585,8 @@ class EmsProgramCard extends LitElement {
       state: true,
       idx: -1
     };
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDebugMode = urlParams.has("debug") && urlParams.get("debug") === "1";
   }
   // Handle all config parameters
   setConfig(config) {
@@ -652,12 +610,7 @@ class EmsProgramCard extends LitElement {
       );
       loadProgram(this);
     }
-    const lang = this._hass.locale.language;
-    if (lang !== translations$1.lang) {
-      loadTranslations$1(lang).then(() => {
-        this.requestUpdate();
-      });
-    }
+    loadTranslations(this._hass.locale.language);
   }
   // Returns the height of the card
   getCardSize() {
@@ -668,7 +621,7 @@ class EmsProgramCard extends LitElement {
     if (!this.config.entity_id) {
       return html`<ha-card header="${this.config.title}">
         <div class="card-content">
-          ${localize$1("ui.card.ems_program_card.editor.help_text")}
+          ${localize("ui.card.ems_program_card.editor.help_text")}
           <pre><code>
             type: custom:ems-program-card
             title: Program Buderus
@@ -681,8 +634,8 @@ class EmsProgramCard extends LitElement {
     return html`<ha-card header="${this.config.title}">
       <div class="card-content">
         <div class="row">
-          <ha-select
-            naturalmenuwidth
+          <ha-select style="width: 200px;"
+            .naturalmenuwidth=${false}
             @change="${(e) => {
       this.switchtime.day = e.target.value;
     }}"
@@ -728,7 +681,7 @@ class EmsProgramCard extends LitElement {
         </div>
         <div class="row">
           ${renderButton(
-      localize$1("ui.card.ems_program_card.new"),
+      localize("ui.card.ems_program_card.new"),
       () => {
         addSwitchtime(this.programNew, this.switchtime);
         storeProgram(this);
@@ -737,7 +690,7 @@ class EmsProgramCard extends LitElement {
       this.isRunning || !this.programNew
     )}
           ${renderButton(
-      localize$1("ui.card.ems_program_card.delete"),
+      localize("ui.card.ems_program_card.delete"),
       () => {
         this.isSelected = false;
         removeSwitchtime(this.programNew, this.switchtime);
@@ -747,7 +700,7 @@ class EmsProgramCard extends LitElement {
       !this.isSelected
     )}
           ${renderButton(
-      localize$1("ui.card.ems_program_card.change"),
+      localize("ui.card.ems_program_card.change"),
       () => {
         this.isSelected = false;
         removeSwitchtime(this.programNew, this.switchtime);
@@ -760,9 +713,9 @@ class EmsProgramCard extends LitElement {
         </div>
 
         ${!this.program || !this.programNew ? html`<div class="row message">
-              ${localize$1("ui.card.ems_program_card.error.no_program")}
+              ${localize("ui.card.ems_program_card.error.no_program")}
             </div>` : html`<div class="row">
-                ${localize$1("ui.card.ems_program_card.advice")}
+                ${localize("ui.card.ems_program_card.advice")}
               </div>
               ${renderSvg(this, (e) => {
       const [wdId, idx] = e.target.id.split("-");
@@ -779,7 +732,7 @@ class EmsProgramCard extends LitElement {
 
         <div class="row">
           ${renderButton(
-      localize$1("ui.card.ems_program_card.ems_read"),
+      localize("ui.card.ems_program_card.ems_read"),
       () => {
         this.isSelected = false;
         readFromEms(this);
@@ -788,7 +741,7 @@ class EmsProgramCard extends LitElement {
       this.isRunning
     )}
           ${renderButton(
-      localize$1("ui.card.ems_program_card.ems_write"),
+      localize("ui.card.ems_program_card.ems_write"),
       () => {
         this.isSelected = false;
         writeToEms(this);
@@ -799,7 +752,7 @@ class EmsProgramCard extends LitElement {
         </div>
         <div class="row">
           ${renderButton(
-      localize$1("ui.card.ems_program_card.undo"),
+      localize("ui.card.ems_program_card.undo"),
       () => {
         this.isSelected = false;
         undoProgram(this);
@@ -808,7 +761,7 @@ class EmsProgramCard extends LitElement {
       this.isRunning
     )}
           ${renderButton(
-      localize$1("ui.card.ems_program_card.reset"),
+      localize("ui.card.ems_program_card.reset"),
       () => {
         this.isSelected = false;
         resetProgram(this);
@@ -819,7 +772,6 @@ class EmsProgramCard extends LitElement {
         </div>
 
         <div class="row message">
-          ${this.isRunning ? html`<ha-circular-progress indeterminate></ha-circular-progress>` : html``}
           ${this.statusMessage}
         </div>
       </div>
@@ -859,7 +811,9 @@ class EmsProgramCardEditor extends LitElement {
       this.entityIdList = Object.keys(hass.states).filter(
         (key) => key.startsWith("text.")
       );
-      console.info(this.entityIdList);
+      if (this.isDebugMode) {
+        console.info(this.entityIdList);
+      }
     }
   }
   // Deal with config changes
@@ -875,11 +829,11 @@ class EmsProgramCardEditor extends LitElement {
   render() {
     return html`
       <div class="row">
-        ${localize$1("ui.card.ems_program_card.editor.help_text")}
+        ${localize("ui.card.ems_program_card.editor.help_text")}
       </div>
       <div class="row">
         <ha-textfield
-          label="${localize$1("ui.card.ems_program_card.editor.title")}"
+          label="${localize("ui.card.ems_program_card.editor.title")}"
           .value=${this._config.title}
           class="in-container"
           @click="${(e) => {
@@ -894,7 +848,7 @@ class EmsProgramCardEditor extends LitElement {
           .includeEntities=${Object.keys(this._hass.states).filter(
       (key) => key.startsWith("text.")
     )}
-          .label="${localize$1("ui.card.ems_program_card.editor.entity")}"
+          .label="${localize("ui.card.ems_program_card.editor.entity")}"
           class="in-container"
           @change="${(e) => {
       const newConfig = Object.assign({}, this._config);
