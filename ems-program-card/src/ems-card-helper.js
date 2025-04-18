@@ -34,18 +34,17 @@ async function loadCustomElements() {
 await loadCustomElements();
 
 // Load language for localization of card
-export let translations = { lang: "en", data: en };
-export async function loadTranslations(lang = "en") {
-  const availableTranslations = { en, de };
-  translations.data = availableTranslations[lang] || availableTranslations["en"];
+const translations = { en, de };
+let langDict = en;
+export function loadTranslations(lang = "en") {
+  langDict = translations[lang] || translations["en"];
 }
-await loadTranslations();
 
 // Localizes an id to supported languages
 export function localize(label) {
   let value = undefined;
   try {
-    value = label.split(".").reduce((obj, key) => obj[key], translations.data);
+    value = label.split(".").reduce((obj, key) => obj[key], langDict);
   } catch (error) { }
   if (value && typeof value === "string") {
     return value;

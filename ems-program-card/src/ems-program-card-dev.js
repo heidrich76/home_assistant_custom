@@ -4,7 +4,6 @@ import {
   css,
 } from "https://unpkg.com/lit-element@3.3.3/lit-element.js?module";
 import {
-  translations,
   loadTranslations,
   localize,
 } from "./ems-card-helper.js";
@@ -123,12 +122,7 @@ class EmsProgramCard extends LitElement {
     }
 
     // Load translation for selected language
-    const lang = this._hass.locale.language;
-    if (lang !== translations.lang) {
-      loadTranslations(lang).then(() => {
-        this.requestUpdate();
-      });
-    }
+    loadTranslations(this._hass.locale.language);
   }
 
   // Returns the height of the card
