@@ -162,3 +162,7 @@ cython_debug/
 # Windows / Mac
 Desktop.ini
 .DS_Store
+
+# JavaScript
+node_modules
+package-lock.json
