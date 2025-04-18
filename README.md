@@ -38,7 +38,7 @@ There is currently also no graphical editor. So you have to add and configure th
 
 Example:
 
-```
+```yaml
 type: custom:simple-gallery-card
 media_content_id: media-source://media_source/local/snapshots/
 title: Snapshots
@@ -57,9 +57,9 @@ You may:
 - Write the changed program back to the EMS bus.
 
 HACS is not supported yet. For manual installation do the following: 
-- Download the whole [folder](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fheidrich76%2Fhome_assistant_custom%2Ftree%2Fmain%2Fwww%2Fems-program).
-- Unzip the folder into a folder named `www/ems-program` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)). **Important: Check that the name of the folder is exactly as written before!** 
-- Add the main card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program/ems-program-card.js?v=1`.
+- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/www/ems-program-card.js).
+- Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
+- Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program-card.js?v=1`.
 - Increase version count if you update the card!
 
 > [!WARNING] 
@@ -77,7 +77,7 @@ There is also a graphical editor. But, you may also add and configure the card v
 
 Example:
 
-```
+```yaml
 type: custom:ems-program-card
 title: Switch Times Buderus Heating
 entity_id: text.thermostat_hc1_switchtime1

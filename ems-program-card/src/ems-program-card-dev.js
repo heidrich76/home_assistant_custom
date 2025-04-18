@@ -7,7 +7,7 @@ import {
   translations,
   loadTranslations,
   localize,
-} from "./ems-card-helper.js?v=4";
+} from "./ems-card-helper.js";
 import {
   storeProgram,
   loadProgram,
@@ -17,8 +17,8 @@ import {
   readFromEms,
   addSwitchtime,
   removeSwitchtime,
-} from "./ems-service-helper.js?v=139";
-import { renderSvg } from "./ems-svg-helper.js?v=38";
+} from "./ems-service-helper.js";
+import { renderSvg } from "./ems-svg-helper.js";
 
 // All CSS styles
 const cssStyles = css`
@@ -157,146 +157,146 @@ class EmsProgramCard extends LitElement {
           <ha-select
             naturalmenuwidth
             @change="${(e) => {
-              this.switchtime.day = e.target.value;
-            }}"
+        this.switchtime.day = e.target.value;
+      }}"
             class="in-container"
           >
             ${Object.entries(this.dayIds).map(
-              ([idx, id]) => html`<ha-list-item
+        ([idx, id]) => html`<ha-list-item
                 value="${String(id)}"
                 role="option"
                 ?selected="${this.switchtime.day == id}"
               >
                 ${this.dayNames[idx]}
               </ha-list-item>`
-            )}
+      )}
           </ha-select>
           <ha-time-input
             .locale=${this._hass.locale}
             .value=${timeStr}
             @change="${(e) => {
-              const [hour, minute] = e.target.value.split(":");
-              let hourNum = Number(hour);
-              if (!(hourNum >= 0 && hourNum <= 23)) {
-                hourNum = 0;
-              }
-              let minuteNum = Number(minute);
-              if (!(minuteNum >= 0 && minuteNum <= 59)) {
-                minuteNum = 0;
-              }
-              minuteNum = Math.floor(minuteNum / 10) * 10;
-              this.switchtime.hour = String(hourNum).padStart(2, "0");
-              this.switchtime.minute = String(minuteNum).padStart(2, "0");
-              this.requestUpdate();
-            }}"
+        const [hour, minute] = e.target.value.split(":");
+        let hourNum = Number(hour);
+        if (!(hourNum >= 0 && hourNum <= 23)) {
+          hourNum = 0;
+        }
+        let minuteNum = Number(minute);
+        if (!(minuteNum >= 0 && minuteNum <= 59)) {
+          minuteNum = 0;
+        }
+        minuteNum = Math.floor(minuteNum / 10) * 10;
+        this.switchtime.hour = String(hourNum).padStart(2, "0");
+        this.switchtime.minute = String(minuteNum).padStart(2, "0");
+        this.requestUpdate();
+      }}"
             class="in-container"
           ></ha-time-input>
           <ha-checkbox
             .checked=${this.switchtime.state}
             @change="${(e) => {
-              this.switchtime.state = !this.switchtime.state;
-            }}"
+        this.switchtime.state = !this.switchtime.state;
+      }}"
             class="in-container"
           ></ha-checkbox>
         </div>
         <div class="row">
           ${renderButton(
-            localize("ui.card.ems_program_card.new"),
-            () => {
-              addSwitchtime(this.programNew, this.switchtime);
-              storeProgram(this);
-              this.requestUpdate();
-            },
-            this.isRunning || !this.programNew
-          )}
+        localize("ui.card.ems_program_card.new"),
+        () => {
+          addSwitchtime(this.programNew, this.switchtime);
+          storeProgram(this);
+          this.requestUpdate();
+        },
+        this.isRunning || !this.programNew
+      )}
           ${renderButton(
-            localize("ui.card.ems_program_card.delete"),
-            () => {
-              this.isSelected = false;
-              removeSwitchtime(this.programNew, this.switchtime);
-              storeProgram(this);
-              this.requestUpdate();
-            },
-            !this.isSelected
-          )}
+        localize("ui.card.ems_program_card.delete"),
+        () => {
+          this.isSelected = false;
+          removeSwitchtime(this.programNew, this.switchtime);
+          storeProgram(this);
+          this.requestUpdate();
+        },
+        !this.isSelected
+      )}
           ${renderButton(
-            localize("ui.card.ems_program_card.change"),
-            () => {
-              this.isSelected = false;
-              removeSwitchtime(this.programNew, this.switchtime);
-              addSwitchtime(this.programNew, this.switchtime);
-              storeProgram(this);
-              this.requestUpdate();
-            },
-            !this.isSelected
-          )}
+        localize("ui.card.ems_program_card.change"),
+        () => {
+          this.isSelected = false;
+          removeSwitchtime(this.programNew, this.switchtime);
+          addSwitchtime(this.programNew, this.switchtime);
+          storeProgram(this);
+          this.requestUpdate();
+        },
+        !this.isSelected
+      )}
         </div>
 
         ${!this.program || !this.programNew
-          ? html`<div class="row message">
+        ? html`<div class="row message">
               ${localize("ui.card.ems_program_card.error.no_program")}
             </div>`
-          : html`<div class="row">
+        : html`<div class="row">
                 ${localize("ui.card.ems_program_card.advice")}
               </div>
               ${renderSvg(this, (e) => {
-                const [wdId, idx] = e.target.id.split("-");
-                const selectedSt = this.programNew[wdId][idx];
-                this.isSelected = true;
-                this.switchtime = {
-                  day: wdId,
-                  hour: selectedSt.hour,
-                  minute: selectedSt.minute,
-                  state: selectedSt.state,
-                  idx: idx,
-                };
-              })}`}
+          const [wdId, idx] = e.target.id.split("-");
+          const selectedSt = this.programNew[wdId][idx];
+          this.isSelected = true;
+          this.switchtime = {
+            day: wdId,
+            hour: selectedSt.hour,
+            minute: selectedSt.minute,
+            state: selectedSt.state,
+            idx: idx,
+          };
+        })}`}
 
         <div class="row">
           ${renderButton(
-            localize("ui.card.ems_program_card.ems_read"),
-            () => {
-              this.isSelected = false;
-              readFromEms(this);
-              this.requestUpdate();
-            },
-            this.isRunning
-          )}
+          localize("ui.card.ems_program_card.ems_read"),
+          () => {
+            this.isSelected = false;
+            readFromEms(this);
+            this.requestUpdate();
+          },
+          this.isRunning
+        )}
           ${renderButton(
-            localize("ui.card.ems_program_card.ems_write"),
-            () => {
-              this.isSelected = false;
-              writeToEms(this);
-              this.requestUpdate();
-            },
-            this.isRunning
-          )}
+          localize("ui.card.ems_program_card.ems_write"),
+          () => {
+            this.isSelected = false;
+            writeToEms(this);
+            this.requestUpdate();
+          },
+          this.isRunning
+        )}
         </div>
         <div class="row">
           ${renderButton(
-            localize("ui.card.ems_program_card.undo"),
-            () => {
-              this.isSelected = false;
-              undoProgram(this);
-              this.requestUpdate();
-            },
-            this.isRunning
-          )}
+          localize("ui.card.ems_program_card.undo"),
+          () => {
+            this.isSelected = false;
+            undoProgram(this);
+            this.requestUpdate();
+          },
+          this.isRunning
+        )}
           ${renderButton(
-            localize("ui.card.ems_program_card.reset"),
-            () => {
-              this.isSelected = false;
-              resetProgram(this);
-              this.requestUpdate();
-            },
-            this.isRunning
-          )}
+          localize("ui.card.ems_program_card.reset"),
+          () => {
+            this.isSelected = false;
+            resetProgram(this);
+            this.requestUpdate();
+          },
+          this.isRunning
+        )}
         </div>
 
         <div class="row message">
           ${this.isRunning
-            ? html`<ha-circular-progress indeterminate></ha-circular-progress>`
-            : html``}
+        ? html`<ha-circular-progress indeterminate></ha-circular-progress>`
+        : html``}
           ${this.statusMessage}
         </div>
       </div>
@@ -305,15 +305,15 @@ class EmsProgramCard extends LitElement {
 
   // Set config editor card
   static getConfigElement() {
-    return document.createElement("ems-program-card-editor");
+    return document.createElement(import.meta.env.VITE_HA_CARD_EDITOR_ID);
   }
 }
 
 // Register card
-customElements.define("ems-program-card", EmsProgramCard);
+customElements.define(import.meta.env.VITE_HA_CARD_ID, EmsProgramCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "ems-program-card",
+  type: import.meta.env.VITE_HA_CARD_ID,
   name: "EMS Program Card",
 });
 
@@ -370,24 +370,24 @@ class EmsProgramCardEditor extends LitElement {
           .value=${this._config.title}
           class="in-container"
           @click="${(e) => {
-            const newConfig = Object.assign({}, this._config);
-            newConfig.title = e.target.value;
-            this.configChanged(newConfig);
-          }}"
+        const newConfig = Object.assign({}, this._config);
+        newConfig.title = e.target.value;
+        this.configChanged(newConfig);
+      }}"
         ></ha-textfield>
         <ha-entity-picker
           .hass=${this._hass}
           .value=${this._config.entity_id}
           .includeEntities=${Object.keys(this._hass.states).filter((key) =>
-            key.startsWith("text.")
-          )}
+        key.startsWith("text.")
+      )}
           .label="${localize("ui.card.ems_program_card.editor.entity")}"
           class="in-container"
           @change="${(e) => {
-            const newConfig = Object.assign({}, this._config);
-            newConfig.entity_id = e.target.value;
-            this.configChanged(newConfig);
-          }}"
+        const newConfig = Object.assign({}, this._config);
+        newConfig.entity_id = e.target.value;
+        this.configChanged(newConfig);
+      }}"
           allow-custom-entity
         ></ha-entity-picker>
       </div>
@@ -396,4 +396,4 @@ class EmsProgramCardEditor extends LitElement {
 }
 
 // Register config editor
-customElements.define("ems-program-card-editor", EmsProgramCardEditor);
+customElements.define(import.meta.env.VITE_HA_CARD_EDITOR_ID, EmsProgramCardEditor);

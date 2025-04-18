@@ -46,7 +46,7 @@ export async function loadTranslations(lang = "en") {
 }
 await loadTranslations();
 
-// Localizes an id to supported laguages
+// Localizes an id to supported languages
 export function localize(label) {
   let value = undefined;
   try {

@@ -1,6 +1,6 @@
-# Simple Gallery Card Development
+# EMS Program Card Development
 
-A brief explanation how the simple gallery card is developed based on **"Vite** as development server.
+A brief explanation how the EMS program card is developed based on **"Vite** as development server.
 
 
 ## Installation
@@ -22,20 +22,20 @@ A brief explanation how the simple gallery card is developed based on **"Vite** 
    ```yaml
    lovelace:
      resources:
-       - url: "http://localhost:5173/src/simple-gallery-card-dev.js"
+       - url: "http://localhost:5173/src/ems-program-card-dev.js"
          type: module
    ```
 
 **Add custom card to dashboard:**
    ```yaml
-    type: custom:simple-gallery-card-dev
-    media_content_id: media-source://media_source/local/reolink/
-    title: My Gallery
+      type: custom:ems-program-card-dev
+      title: Schaltprogramm Buderus
+      entity_id: text.thermostat_hc1_switchtime1
    ```
 
 **Live reloading**: Any changes saved will be immediately reflected in the Home Assistant UI.
 However, browser page needs to be reloaded.
-Add `debug=1` to URL for displaying debug messages, e.g., `http://192.168.178.74:8123/dashboard-development/gallery?debug=1`
+Add `debug=1` to URL for displaying debug messages, e.g., `http://192.168.178.74:8123/dashboard-development/0?debug=1`
 
 
 ## Deployment
@@ -57,6 +57,6 @@ Add `debug=1` to URL for displaying debug messages, e.g., `http://192.168.178.74
    ```yaml
    lovelace:
      resources:
-       - url: "/local/simple-gallery-card.js?v=1"
+       - url: "/local/ems-program-card.js?v=1"
          type: module
    ```
