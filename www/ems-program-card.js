@@ -1,5 +1,17 @@
 import { svg, css, LitElement, html } from 'https://unpkg.com/lit-element@3.3.3/lit-element.js?module';
 
+const ui$1 = {"card":{"ems_program_card":{"new":"New","delete":"Delete","change":"Change","advice":"Select a red switch time for adaptation","ems_read":"Read EMS","ems_write":"Write EMS","undo":"Undo","reset":"Reset","ems_success":"Accessing EMS bus successful","error":{"no_program":"No program was read (Read EMS first)","ems_no_response":"EMS bus did not respond (e.g., timeout issues)"},"editor":{"title":"Title","entity":"Entity","help_text":"Pick an entity, which contains switch times of an EMS program"}}}};
+const en = {
+  ui: ui$1,
+};
+
+const ui = {"card":{"ems_program_card":{"new":"Neu","delete":"Löschen","change":"Ändern","advice":"Wähle rote Schaltpunkte zum Anpassen aus","ems_read":"EMS lesen","ems_write":"EMS schreiben","undo":"Rückgängig","reset":"Zurücksetzen","ems_success":"Zugriff auf EMS-Bus erfolgreich","error":{"no_program":"Kein Programm verfügbar (zuerst EMS lesen)","ems_no_response":"EMS-Bus reagiert nicht (evtl. Timeout-Problem)"},"editor":{"title":"Titel","entity":"Entität","help_text":"Wähle eine Entität, welche Schaltpunkte eines EMS-Programms enthält"}}}};
+const de = {
+  ui,
+};
+
+// Import language files to JS
+
 // Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
 // Partially allows for loading ha custom elements, such as checkbox
 async function loadCustomElements$1() {
@@ -32,19 +44,10 @@ async function loadCustomElements$1() {
 await loadCustomElements$1();
 
 // Load language for localization of card
-let translations$1 = { lang: "en", data: undefined };
+let translations$1 = { lang: "en", data: en };
 async function loadTranslations$1(lang = "en") {
-  const path = `/local/ems-program/translations/${lang}.json?v=9}`;
-  let data = undefined;
-  try {
-    const response = await fetch(path);
-    if (response.ok) {
-      data = await response.json();
-    }
-  } catch (error) {
-    console.info(error);
-  }
-  translations$1.data = data;
+  const availableTranslations = { en, de };
+  translations$1.data = availableTranslations[lang] || availableTranslations["en"];
 }
 await loadTranslations$1();
 
@@ -53,13 +56,15 @@ function localize$1(label) {
   let value = undefined;
   try {
     value = label.split(".").reduce((obj, key) => obj[key], translations$1.data);
-  } catch (error) {}
+  } catch (error) { }
   if (value && typeof value === "string") {
     return value;
   } else {
     return label;
   }
 }
+
+// Import language files to JS
 
 // Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
 // Partially allows for loading ha custom elements, such as checkbox
@@ -93,19 +98,10 @@ async function loadCustomElements() {
 await loadCustomElements();
 
 // Load language for localization of card
-let translations = { lang: "en", data: undefined };
+let translations = { lang: "en", data: en };
 async function loadTranslations(lang = "en") {
-  const path = `/local/ems-program/translations/${lang}.json?v=9}`;
-  let data = undefined;
-  try {
-    const response = await fetch(path);
-    if (response.ok) {
-      data = await response.json();
-    }
-  } catch (error) {
-    console.info(error);
-  }
-  translations.data = data;
+  const availableTranslations = { en, de };
+  translations.data = availableTranslations[lang] || availableTranslations["en"];
 }
 await loadTranslations();
 
@@ -114,7 +110,7 @@ function localize(label) {
   let value = undefined;
   try {
     value = label.split(".").reduce((obj, key) => obj[key], translations.data);
-  } catch (error) {}
+  } catch (error) { }
   if (value && typeof value === "string") {
     return value;
   } else {

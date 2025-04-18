@@ -1,3 +1,7 @@
+// Import language files to JS
+import en from './translations/en.json';
+import de from './translations/de.json';
+
 // Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
 // Partially allows for loading ha custom elements, such as checkbox
 async function loadCustomElements() {
@@ -30,19 +34,10 @@ async function loadCustomElements() {
 await loadCustomElements();
 
 // Load language for localization of card
-export let translations = { lang: "en", data: undefined };
+export let translations = { lang: "en", data: en };
 export async function loadTranslations(lang = "en") {
-  const path = `/local/ems-program/translations/${lang}.json?v=9}`;
-  let data = undefined;
-  try {
-    const response = await fetch(path);
-    if (response.ok) {
-      data = await response.json();
-    }
-  } catch (error) {
-    console.info(error);
-  }
-  translations.data = data;
+  const availableTranslations = { en, de };
+  translations.data = availableTranslations[lang] || availableTranslations["en"];
 }
 await loadTranslations();
 
@@ -51,7 +46,7 @@ export function localize(label) {
   let value = undefined;
   try {
     value = label.split(".").reduce((obj, key) => obj[key], translations.data);
-  } catch (error) {}
+  } catch (error) { }
   if (value && typeof value === "string") {
     return value;
   } else {
