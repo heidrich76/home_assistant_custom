@@ -1,7 +1,6 @@
 {
   "name": "simple-gallery-card",
   "version": "0.2.0",
-  "description": "Custom Home Assistant gallery card with LitElement",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

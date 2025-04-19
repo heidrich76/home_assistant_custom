@@ -1,4 +1,4 @@
-import { css } from "https://unpkg.com/lit-element@3.3.0/lit-element.js?module";
+import { css } from "lit";
 
 export const styles = css`
   .displayBox {

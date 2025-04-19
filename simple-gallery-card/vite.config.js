@@ -8,7 +8,7 @@ export default {
   build: {
     minify: 'terser',
     lib: {
-      entry: 'src/simple-gallery-card-dev.js',
+      entry: 'src/simple-gallery-card-dev.ts',
       formats: ['es'],
       fileName: () => 'simple-gallery-card.js',
     },

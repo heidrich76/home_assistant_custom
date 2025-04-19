@@ -11,55 +11,77 @@ import {
   LitElement,
   html,
   css,
-} from "https://unpkg.com/lit-element@3.3.0/lit-element.js?module";
+  TemplateResult,
+  CSSResultGroup
+} from "lit";
+import { property, state, customElement } from "lit/decorators.js";
 
 // Import CSS styles
-import { styles } from './styles.js';
+import { styles } from './styles.ts';
+import { Hass } from "./home-assistant";
 
-class SimpleGalleryCard extends LitElement {
+interface MediaItem {
+  title: string;
+  media_content_type: string;
+  media_content_id: string;
+  url: string;
+}
+
+@customElement(import.meta.env.VITE_HA_CARD_ID)
+export class SimpleGalleryCard extends LitElement {
+  // Load custom styles to card
+  static styles: CSSResultGroup = styles;
+
   // Define custom properties, which cause card re-rendering
-  static get properties() {
-    return {
-      _hass: {},
-      config: {},
-      mediaList: [],
-      mediaListShown: {},
-      mediaListDelete: {},
-      mediaItemShown: {},
-      currentPage: {},
-      pageSize: {},
-      maxPage: {},
-      confirmDelete: {},
-      hasDelete: {},
-      isDebugMode: {}
-    };
-  }
+  @property({ attribute: false })
+  public _hass!: Hass;
+
+  @state() private config: any;
+  @state() private mediaList: MediaItem[] = [];
+  @state() private mediaListShown: MediaItem[] = [];
+  @state() private mediaListDelete: MediaItem[] = [];
+  @state() private mediaItemShown?: MediaItem;
+  @state() private currentPage = 1;
+  @state() private pageSize = 4;
+  @state() private maxPage = 1;
+  @state() private confirmDelete = false;
+  @state() private hasDelete = false;
+  @state() private isDebugMode = false;
 
   // Define default values for custom properties
   constructor() {
     super();
-    this.mediaList = undefined;
-    this.mediaListShown = [];
-    this.mediaListDelete = [];
-    this.mediaItemShown = undefined;
-    this.currentPage = 1;
-    this.pageSize = 4;
-    this.maxPage = 1;
-    this.confirmDelete = false;
-    this.hasDelete = false;
 
     // Checks whether program runs in debug mode
     const urlParams = new URLSearchParams(window.location.search);
     this.isDebugMode = urlParams.has('debug') && urlParams.get('debug') === '1';
   }
 
-  // Load custom styles to card
-  static get styles() {
-    return styles;
+  // Displays configuration info 
+  setConfig(config: any): void {
+    if (!config.media_content_id) {
+      throw new Error(
+        "You must define a media content id, which defines a directory. " +
+        "Example: 'media-source://media_source/local/myfolder/', which " +
+        "refers to folder named 'myfolder' in your local media folder."
+      );
+    }
+    this.config = config;
+  }
+
+  // HA calls this method for transferring the Hass object to the card
+  set hass(hass: Hass) {
+    this._hass = hass;
+    this._loadResources();
+  }
+
+  // Define size of card
+  getCardSize(): number {
+    return 5;
   }
 
   // Render card
-  render() {
+  render(): TemplateResult {
     const title = this.config.title ? this.config.title : "";
     this._updateMediaListShown();
 
@@ -134,9 +156,9 @@ class SimpleGalleryCard extends LitElement {
       </div>
       <div class="pagesBox">
         ${Array(this.maxPage)
-        .fill()
+        .fill(0)
         .map(
-          (v, i) => html`<span
+          (_, i) => html`<span
                 @click="${() => this._setPage(i + 1)}"
                 class="pageNumber"
                 style="${this.currentPage == i + 1
@@ -187,40 +209,20 @@ class SimpleGalleryCard extends LitElement {
     </ha-card>`;
   }
 
-  setConfig(config) {
-    if (!config.media_content_id) {
-      throw new Error(
-        "You must define a media content id, which defines a directory. " +
-        "Example: 'media-source://media_source/local/myfolder/', which " +
-        "refers to folder named 'myfolder' in your local media folder."
-      );
-    }
-    this.config = config;
-  }
-
-  set hass(hass) {
-    this._hass = hass;
-    this._loadResources();
-  }
-
-  getCardSize() {
-    return 5;
-  }
-
   // Loads all resources required; i.e., fills the media list and updates
   // list of media shown depending on selected page.
-  _loadResources() {
+  private async _loadResources(): Promise<void> {
     // Determine page size
     if (this.config.page_size) {
       this.pageSize = this.config.page_size;
     }
 
     // Browse media if list not filled already
-    if (this.mediaList != undefined) {
+    if (this.mediaList.length > 0) {
       return;
     }
     this.mediaList = [];
-    var commands = [];
+    const commands: Promise<void>[] = [];
     this._fillMediaList(commands, this.config.media_content_id);
 
     // Determine whether delete service is available under components
@@ -242,7 +244,7 @@ class SimpleGalleryCard extends LitElement {
 
   // Recursively browse for media in directory specified by media_content_id
   // and write results into this.mediaList.
-  _fillMediaList(commands, media_content_id) {
+  private _fillMediaList(commands: Promise<void>[], media_content_id: string): void {
     commands.push(
       this._hass
         .callWS({
@@ -250,7 +252,7 @@ class SimpleGalleryCard extends LitElement {
           media_content_id: media_content_id,
         })
         .then((wsResponse) => {
-          wsResponse.children.forEach((child) => {
+          wsResponse.children.forEach((child: any) => {
             if (child.media_class == "directory") {
               this._fillMediaList(commands, child.media_content_id);
             } else {
@@ -274,7 +276,7 @@ class SimpleGalleryCard extends LitElement {
   }
 
   // Update the list of media shown depending on selected page.
-  _updateMediaListShown() {
+  private _updateMediaListShown(): void {
     const startPos = (this.currentPage - 1) * this.pageSize;
     this.maxPage = Math.ceil(this.mediaList.length / this.pageSize);
     var shownSize = this.pageSize;
@@ -296,7 +298,7 @@ class SimpleGalleryCard extends LitElement {
   // Renders a single media item as HTML and resolves media URL from HA
   // (including authentication) if no URL was contained in the media item
   // before.
-  _renderMediaItem(mediaItem, styleClass) {
+  private _renderMediaItem(mediaItem: MediaItem, styleClass: string): TemplateResult {
     // Fill URL for web access if empty
     if (mediaItem.url === "") {
       this._hass
@@ -351,8 +353,8 @@ class SimpleGalleryCard extends LitElement {
   }
 
   // Reloads the list of media items from the media source
-  _reloadMedia() {
-    this.mediaList = undefined;
+  private _reloadMedia(): void {
+    this.mediaList = [];
     this.mediaItemShown = undefined;
     this.currentPage = 1;
     this.mediaListDelete = [];
@@ -362,75 +364,58 @@ class SimpleGalleryCard extends LitElement {
   }
 
   // Selects all media
-  _selectAllMedia() {
-    this.mediaListDelete = [];
-    this.mediaListDelete.push(...this.mediaList);
+  private _selectAllMedia(): void {
+    this.mediaListDelete = [...this.mediaList];
     this.requestUpdate();
   }
 
-  // Selects all media
-  _deselectAllMedia() {
+
+  // Deselects all media
+  private _deselectAllMedia(): void {
     this.mediaListDelete = [];
     this.requestUpdate();
   }
 
   // Deletes the selected media from media source
-  _deleteMedia() {
-    // Call delete service for each media item in list of files to be deleted
-    var commands = [];
-    this.mediaListDelete.forEach((mediaItem) => {
-      const fileName = mediaItem.media_content_id.replace(
-        "media-source://media_source/local",
-        "/media"
-      );
-      commands.push(
-        this._hass.callService("delete", "file", {
-          file: fileName,
-        })
-      );
+  private async _deleteMedia(): Promise<void> {
+    const commands = this.mediaListDelete.map(mediaItem => {
+      const file = mediaItem.media_content_id.replace('media-source://media_source/local', '/media');
+      return this._hass.callService('delete', 'file', { file });
     });
 
-    // Wait for all delete commands to have finished
-    Promise.all(commands).then(() => {
-      this.mediaList = undefined;
-      if (this.mediaListDelete.includes(this.mediaItemShown)) {
-        this.mediaItemShown = undefined;
-      }
-      this.currentPage = 1;
-      this.mediaListDelete = [];
-      this.confirmDelete = false;
-      this._loadResources();
-      this.requestUpdate();
-    });
+    await Promise.all(commands);
+    this.mediaList = [];
+    this.mediaItemShown = undefined;
+    this.currentPage = 1;
+    this.mediaListDelete = [];
+    this.confirmDelete = false;
+    await this._loadResources();
+    this.requestUpdate();
   }
 
   // Sets the current page shown from the media list
-  _setPage(value) {
-    if (value >= 1 && value <= this.maxPage) {
-      this.currentPage = value;
+  private _setPage(page: number): void {
+    if (page >= 1 && page <= this.maxPage) {
+      this.currentPage = page;
+      this._updateMediaListShown();
     }
   }
 
   // Sets the current media item shown in large box
-  _setMedia(mediaItem) {
+  private _setMedia(mediaItem: MediaItem): void {
     this.mediaItemShown = mediaItem;
     this.requestUpdate();
-    console.log("Media item shown", this.mediaItemShown);
   }
 
   // Adds a media item to be deleted
-  _addMediaToDelete(mediaItem) {
+  private _addMediaToDelete(mediaItem: MediaItem): void {
     this.mediaListDelete.push(mediaItem);
     this.requestUpdate();
-    console.log("Media list to delete", this.mediaListDelete);
   }
 
   // Removes a media item from the list to be deleted
-  _removeMediaToDelete(mediaItem) {
-    this.mediaListDelete = this.mediaListDelete.filter((f) => f !== mediaItem);
+  private _removeMediaToDelete(mediaItem: MediaItem): void {
+    this.mediaListDelete = this.mediaListDelete.filter(m => m !== mediaItem);
     this.requestUpdate();
-    console.log("Media list to delete", this.mediaListDelete);
   }
 }
-
-customElements.define(import.meta.env.VITE_HA_CARD_ID, SimpleGalleryCard);
