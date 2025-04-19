@@ -25,7 +25,7 @@ The devise is integrated and tested with the [Zigbee2MQTT](https://www.zigbee2mq
 This custom card shows the photos and videos stored in a media folder in a card. You may specify how many items are shown per page and may navigate through the pages. It was inspired by https://github.com/TarheelGrad1998/gallery-card. If https://github.com/chomupashchuk/delete-file-home-assistant is installed, you may also select files and delete them (be careful :-)).
 
 HACS is not supported yet. For manual installation do the following: 
-- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/simple-gallery-card/dist/simple-gallery-card.js).
+- Download the [card](https://github.com/heidrich76/home_assistant_custom/raw/refs/heads/main/simple-gallery-card/dist/simple-gallery-card.js).
 - Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
 - Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/simple-gallery-card.js?counter=1`.
 - For avoiding cashing problems with old versions, increase counter if you download a new version of the card!
@@ -57,7 +57,7 @@ You may:
 - Write the changed program back to the EMS bus.
 
 HACS is not supported yet. For manual installation do the following: 
-- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/ems-program-card/dist/ems-program-card.js).
+- Download the [card](https://github.com/heidrich76/home_assistant_custom/raw/refs/heads/main/ems-program-card/dist/ems-program-card.js).
 - Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
 - Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program-card.js?counter=1`.
 - For avoiding cashing problems with old versions, increase counter if you download a new version of the card!
