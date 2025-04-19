@@ -25,10 +25,10 @@ The devise is integrated and tested with the [Zigbee2MQTT](https://www.zigbee2mq
 This custom card shows the photos and videos stored in a media folder in a card. You may specify how many items are shown per page and may navigate through the pages. It was inspired by https://github.com/TarheelGrad1998/gallery-card. If https://github.com/chomupashchuk/delete-file-home-assistant is installed, you may also select files and delete them (be careful :-)).
 
 HACS is not supported yet. For manual installation do the following: 
-- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/www/simple-gallery-card.js).
+- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/simple-gallery-card/dist/simple-gallery-card.js).
 - Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
-- Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/simple-gallery-card.js?v1`.
-- Increase version count if you update the card!
+- Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/simple-gallery-card.js?counter=1`.
+- For avoiding cashing problems with old versions, increase counter if you download a new version of the card!
 
 Here is a screenshot:
 
@@ -57,10 +57,10 @@ You may:
 - Write the changed program back to the EMS bus.
 
 HACS is not supported yet. For manual installation do the following: 
-- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/www/ems-program-card.js).
+- Download the [card](https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/ems-program-card/dist/ems-program-card.js).
 - Copy the card into a folder named `www` as part of your config folder (see [Home Assistant's Developers Help](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)).
-- Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program-card.js?v=1`.
-- Increase version count if you update the card!
+- Add the card to your [dashboard resources](http://homeassistant.local:8123/config/lovelace/resources) as a JavaScript-Modul. The path to the card is `/local/ems-program-card.js?counter=1`.
+- For avoiding cashing problems with old versions, increase counter if you download a new version of the card!
 
 > [!WARNING] 
 > Using this card, you may modify switch times of your heating system. You do this on your own risk. The card was only tested using my own heating system and was not tested with any other brands or types. I'm not liable for any issues this may cause. So, be aware that you are using the card on your own risk!

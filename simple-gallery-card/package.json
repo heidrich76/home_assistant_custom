@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deployWww": "copy .\\dist\\* ..\\www",
-    "deployHa": "copy .\\dist\\* \\\\192.168.178.74\\config\\www"
+    "deploy": "copy .\\dist\\* \\\\192.168.178.74\\config\\www"
   },
   "devDependencies": {
     "vite": "^6.3.2"

@@ -47,10 +47,8 @@ Add `debug=1` to URL for displaying debug messages, e.g., `http://192.168.178.74
 
 **Deploy** file to your Home Assistant (development) server for final testing:
    ```bash
-   npm run deployWww
-   npm run deployHa
+   npm run deploy
    ```
-   This deploys to the `www`-Folder (to be released via github) and to an HA server instance, respectively.
    Note that this only works under Windows and that the target directory must be adapted in`package.json`.
 
 **Register the production resource** in `configuration.yaml`:
