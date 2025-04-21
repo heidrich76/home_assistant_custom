@@ -344,7 +344,7 @@ export class SimpleGalleryCard extends LitElement {
               <video
                 src="${mediaItem.url}"
                 ?controls=${styleClass === "mediaDisplay"}
-                preload="none"
+                preload="metadata"
                 class="${styleClass}"></video>
             `
           : html`Neither image nor video found`}
@@ -355,6 +355,7 @@ export class SimpleGalleryCard extends LitElement {
   // Reloads the list of media items from the media source
   private _reloadMedia(): void {
     this.mediaList = [];
+    this.mediaListShown = [];
     this.mediaItemShown = undefined;
     this.currentPage = 1;
     this.mediaListDelete = [];

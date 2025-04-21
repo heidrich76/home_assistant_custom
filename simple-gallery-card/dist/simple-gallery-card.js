@@ -625,10 +625,12 @@ const styles = i$3`
 
   img {
     display: block;
+    background-color: DimGray;
   }
 
   video {
     display: block;
+    background-color: DimGray;
   }
 
   .mediaDisplay {
@@ -924,7 +926,7 @@ let SimpleGalleryCard = class extends i {
               <video
                 src="${mediaItem.url}"
                 ?controls=${styleClass === "mediaDisplay"}
-                preload="none"
+                preload="metadata"
                 class="${styleClass}"></video>
             ` : x`Neither image nor video found`}
       </div>
@@ -933,6 +935,7 @@ let SimpleGalleryCard = class extends i {
   // Reloads the list of media items from the media source
   _reloadMedia() {
     this.mediaList = [];
+    this.mediaListShown = [];
     this.mediaItemShown = void 0;
     this.currentPage = 1;
     this.mediaListDelete = [];

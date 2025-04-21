@@ -27,10 +27,12 @@ export const styles = css`
 
   img {
     display: block;
+    background-color: DimGray;
   }
 
   video {
     display: block;
+    background-color: DimGray;
   }
 
   .mediaDisplay {
