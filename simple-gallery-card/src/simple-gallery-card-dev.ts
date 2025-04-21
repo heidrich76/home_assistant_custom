@@ -327,7 +327,7 @@ export class SimpleGalleryCard extends LitElement {
       <div class="imageContainer">
         ${mediaItem.media_content_type.startsWith("image")
         ? html`
-              <img src="${mediaItem.url}" class="${styleClass}" />
+              <img src="${mediaItem.url}" class="${styleClass}" loading="lazy" />
               ${styleClass === "mediaDisplay"
             ? html` <div class="imageOverlay">
                     <a href="${mediaItem.url}" target="_blank">
@@ -342,9 +342,9 @@ export class SimpleGalleryCard extends LitElement {
         : mediaItem.media_content_type.startsWith("video")
           ? html`
               <video
-                src="${mediaItem.url}#t=0.5"
+                src="${mediaItem.url}"
                 ?controls=${styleClass === "mediaDisplay"}
-                preload="metadata"
+                preload="none"
                 class="${styleClass}"></video>
             `
           : html`Neither image nor video found`}

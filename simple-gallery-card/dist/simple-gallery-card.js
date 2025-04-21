@@ -911,7 +911,7 @@ let SimpleGalleryCard = class extends i {
     return x`
       <div class="imageContainer">
         ${mediaItem.media_content_type.startsWith("image") ? x`
-              <img src="${mediaItem.url}" class="${styleClass}" />
+              <img src="${mediaItem.url}" class="${styleClass}" loading="lazy" />
               ${styleClass === "mediaDisplay" ? x` <div class="imageOverlay">
                     <a href="${mediaItem.url}" target="_blank">
                       <ha-icon
@@ -922,9 +922,9 @@ let SimpleGalleryCard = class extends i {
                   </div>` : x``}
             ` : mediaItem.media_content_type.startsWith("video") ? x`
               <video
-                src="${mediaItem.url}#t=0.5"
+                src="${mediaItem.url}"
                 ?controls=${styleClass === "mediaDisplay"}
-                preload="metadata"
+                preload="none"
                 class="${styleClass}"></video>
             ` : x`Neither image nor video found`}
       </div>
