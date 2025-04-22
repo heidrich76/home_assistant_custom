@@ -542,7 +542,6 @@ let EmsProgramCard = class extends i {
   // Handle all config parameters
   setConfig(config) {
     this.config = { ...config };
-    this.config.title ??= "EMS";
   }
   // Hass method which is regularly called by HA
   set hass(hass) {
@@ -585,23 +584,16 @@ let EmsProgramCard = class extends i {
     return x`<ha-card header="${this.config.title}">
       <div class="card-content">
         <div class="row">
-          <ha-select style="width: 200px;"
+          <ha-select style="width: 150px;"
             .naturalmenuwidth=${false}
-            @change="${(e) => {
-      const value = e?.target?.value;
-      if (value) {
-        this.switchTime.day = value;
-      }
-    }}" class="in-container">
-            ${Object.entries(this.dayIds).map(
-      ([idx, id]) => x`<ha-list-item
+            @change="${(e) => this.switchTime.day = e?.target?.value}"
+            class="in-container">
+              ${Object.entries(this.dayIds).map(([idx, id]) => x`<ha-list-item
                 value="${String(id)}"
                 role="option"
-                ?selected="${this.switchTime.day == id}"
-              >
+                ?selected="${this.switchTime.day == id}">
                 ${this.dayNames[Number(idx)]}
-              </ha-list-item>`
-    )}
+              </ha-list-item>`)}
           </ha-select>
           <ha-time-input
             .locale=${this._hass.locale}
@@ -623,46 +615,31 @@ let EmsProgramCard = class extends i {
         this.switchTime.minute = String(minuteNum).padStart(2, "0");
         this.requestUpdate();
       }
-    }}"
-            class="in-container"></ha-time-input>
+    }}" class="in-container"></ha-time-input>
           <ha-checkbox
             .checked=${this.switchTime.state}
-            @change="${(_) => {
-      this.switchTime.state = !this.switchTime.state;
-    }}"
+            @change="${(_) => this.switchTime.state = !this.switchTime.state}"
             class="in-container"></ha-checkbox>
         </div>
         <div class="row">
-          ${renderButton(
-      localize("ui.card.ems_program_card.new"),
-      () => {
-        addSwitchTime(this);
-        storeProgram(this);
-        this.requestUpdate();
-      },
-      this.isRunning || !this.programNew
-    )}
-          ${renderButton(
-      localize("ui.card.ems_program_card.delete"),
-      () => {
-        this.isSelected = false;
-        removeSwitchTime(this);
-        storeProgram(this);
-        this.requestUpdate();
-      },
-      !this.isSelected
-    )}
-          ${renderButton(
-      localize("ui.card.ems_program_card.change"),
-      () => {
-        this.isSelected = false;
-        removeSwitchTime(this);
-        addSwitchTime(this);
-        storeProgram(this);
-        this.requestUpdate();
-      },
-      !this.isSelected
-    )}
+          ${renderButton(localize("ui.card.ems_program_card.new"), () => {
+      addSwitchTime(this);
+      storeProgram(this);
+      this.requestUpdate();
+    }, this.isRunning || !this.programNew)}
+          ${renderButton(localize("ui.card.ems_program_card.delete"), () => {
+      this.isSelected = false;
+      removeSwitchTime(this);
+      storeProgram(this);
+      this.requestUpdate();
+    }, !this.isSelected)}
+          ${renderButton(localize("ui.card.ems_program_card.change"), () => {
+      this.isSelected = false;
+      removeSwitchTime(this);
+      addSwitchTime(this);
+      storeProgram(this);
+      this.requestUpdate();
+    }, !this.isSelected)}
         </div>
 
         ${!this.program || !this.programNew ? x`<div class="row message">
