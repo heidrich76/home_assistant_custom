@@ -1,7 +1,9 @@
-import { loadTranslations, localize } from "./ems-card-helper.js";
+import { loadTranslations, localize } from "./ems-card-helper.ts";
+import { Program, EmsCard } from "./ems-card"
+
 
 // Access the EMS bus: writing bus input und collecting bus responses
-async function accessEms(card, busInput, stopResponse = undefined) {
+async function accessEms(card: EmsCard, busInput: string[], stopResponse?: string) {
   // Set language
   loadTranslations(card._hass.locale.language)
 
@@ -12,7 +14,7 @@ async function accessEms(card, busInput, stopResponse = undefined) {
   card.requestUpdate();
 
   // Collect responses from bus
-  const busResponses = [];
+  const busResponses: string[] = [];
   let busResponse = "";
   for (const [idx, value] of Object.entries(busInput)) {
     // Set value of bus
@@ -67,8 +69,8 @@ async function accessEms(card, busInput, stopResponse = undefined) {
 }
 
 // Print EMS program to string array
-function printEmsProgram(program, daysOfWeekIds) {
-  let printedProgram = [];
+function printEmsProgram(program: Program | undefined, daysOfWeekIds: string[]): string[] {
+  let printedProgram: string[] = [];
   let idx = 0;
   if (!program) {
     return printedProgram;
@@ -90,12 +92,12 @@ function printEmsProgram(program, daysOfWeekIds) {
 }
 
 // Parses an EMB bus program
-function parseProgram(program, daysOfWeekIds) {
+function parseProgram(program: string[], daysOfWeekIds: string[]): Program | undefined {
   if (!program) {
     return undefined;
   }
 
-  const programParsed = {};
+  const programParsed: Program = {};
   for (const wd of daysOfWeekIds) {
     programParsed[wd] = [];
   }
@@ -111,15 +113,17 @@ function parseProgram(program, daysOfWeekIds) {
       minute: String(minute).padStart(2, "0"),
       secondsSinceMidnight: secondsSinceMidnight,
       state: state,
+      day: weekday,
+      idx: -1,
     });
   }
   return programParsed;
 }
 
-// Clones the orgininal program
-function cloneProgram(daysOfWeekIds, program) {
+// Clones the original program
+function cloneProgram(daysOfWeekIds: string[], program?: Program): Program {
   // Do a deep copy
-  let programCloned = {};
+  let programCloned: Program = {};
   if (!program) {
     return programCloned;
   }
@@ -136,7 +140,7 @@ function cloneProgram(daysOfWeekIds, program) {
 }
 
 // Sets an attribute called "program" at the entity (does not survive restart)
-function setStateAttribute(card, data) {
+function setStateAttribute(card: EmsCard, data: any) {
   // Store program to entity as attributes
   const entityId = card.config.entity_id;
   const stateObj = card._hass.states[entityId];
@@ -162,7 +166,7 @@ function setStateAttribute(card, data) {
 }
 
 // Stores the program to the entity
-export function storeProgram(card) {
+export function storeProgram(card: EmsCard) {
   const data = {
     old: printEmsProgram(card.program, card.dayIds),
     new: printEmsProgram(card.programNew, card.dayIds),
@@ -172,7 +176,7 @@ export function storeProgram(card) {
 }
 
 // Loads the program from the entity if available
-export function loadProgram(card) {
+export function loadProgram(card: EmsCard) {
   const entityId = card.config.entity_id;
   const stateObj = card._hass.states[entityId];
   if (!stateObj) {
@@ -189,7 +193,7 @@ export function loadProgram(card) {
 }
 
 // Undos program changes
-export function undoProgram(card) {
+export function undoProgram(card: EmsCard) {
   if (!card.program) {
     return;
   }
@@ -198,7 +202,7 @@ export function undoProgram(card) {
 }
 
 // Resets stored program
-export function resetProgram(card) {
+export function resetProgram(card: EmsCard) {
   card.program = undefined;
   card.programNew = undefined;
   card.statusMessage = "";
@@ -207,7 +211,7 @@ export function resetProgram(card) {
 }
 
 // Reads the program from the EMS bus
-export function readFromEms(card) {
+export function readFromEms(card: EmsCard) {
   // Store current program and make clear that we are accessing EMS bus
   card.isRunning = true;
 
@@ -231,7 +235,7 @@ export function readFromEms(card) {
 }
 
 // Writes program to EMS bus
-export function writeToEms(card) {
+export function writeToEms(card: EmsCard) {
   card.isRunning = true;
 
   // Convert programs (old and new) to EMS bus format
@@ -245,7 +249,7 @@ export function writeToEms(card) {
   // Calculate difference of programs
   let delta = printedProgramNew.filter((x) => !printedProgram.includes(x));
 
-  // Add "not_set" to programs for resetting switchtimes if new program is
+  // Add "not_set" to programs for resetting switchTimes if new program is
   // shorter than old one
   if (printedProgramNew.length < printedProgram.length) {
     delta = delta.concat(
@@ -277,37 +281,40 @@ export function writeToEms(card) {
 }
 
 // Add a switch time to program via service call
-export function addSwitchtime(program, switchtime) {
-  if (!program) {
+export function addSwitchTime(card: EmsCard) {
+  if (!card.programNew) {
     return;
   }
 
   const secondsSinceMidnight =
-    parseInt(switchtime.hour) * 3600 + parseInt(switchtime.minute) * 60;
+    parseInt(card.switchTime.hour) * 3600 + parseInt(card.switchTime.minute) * 60;
   const stNew = {
-    hour: switchtime.hour,
-    minute: switchtime.minute,
+    day: card.switchTime.day,
+    hour: card.switchTime.hour,
+    minute: card.switchTime.minute,
     secondsSinceMidnight: secondsSinceMidnight,
-    state: switchtime.state,
+    state: card.switchTime.state,
+    idx: -1,
   };
 
   // Entry is replaced with new one, if it has the same time
   // Function assumes that list is sorted
-  let stList = program[switchtime.day];
+  let stList = card.programNew[card.switchTime.day];
   if (stList.length > 0) {
     let stLast = stList[stList.length - 1];
     if (stLast.secondsSinceMidnight < secondsSinceMidnight) {
       // Add to end of list if latest element
       stList.push(stNew);
     } else {
-      for (const [idx, st] of Object.entries(stList)) {
-        if (st.secondsSinceMidnight == secondsSinceMidnight) {
+      for (let i = 0; i < stList.length; i++) {
+        const st = stList[i];
+        if (st.secondsSinceMidnight === secondsSinceMidnight) {
           // Replace entry with same time
-          stList[idx] = stNew;
+          stList[i] = stNew;
           break;
         } else if (st.secondsSinceMidnight > secondsSinceMidnight) {
           // Insert new entry before as soon as one entry is later
-          stList.splice(idx, 0, stNew);
+          stList.splice(i, 0, stNew);
           break;
         }
       }
@@ -316,11 +323,11 @@ export function addSwitchtime(program, switchtime) {
 }
 
 // Removes an entry from the list of entries for a certain day
-export function removeSwitchtime(program, switchtime) {
-  if (!program) {
+export function removeSwitchTime(card: EmsCard) {
+  if (!card.programNew) {
     return;
   }
 
-  let stList = program[switchtime.day];
-  stList.splice(switchtime.idx, 1);
+  let stList = card.programNew[card.switchTime.day];
+  stList.splice(card.switchTime.idx, 1);
 }

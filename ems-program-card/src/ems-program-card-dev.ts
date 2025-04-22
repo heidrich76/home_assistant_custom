@@ -2,11 +2,14 @@ import {
   LitElement,
   html,
   css,
-} from "https://unpkg.com/lit-element@3.3.3/lit-element.js?module";
+  TemplateResult,
+  CSSResultGroup,
+} from "lit";
+import { property, state, customElement } from "lit/decorators.js";
 import {
   loadTranslations,
   localize,
-} from "./ems-card-helper.js";
+} from "./ems-card-helper";
 import {
   storeProgram,
   loadProgram,
@@ -14,10 +17,15 @@ import {
   resetProgram,
   writeToEms,
   readFromEms,
-  addSwitchtime,
-  removeSwitchtime,
-} from "./ems-service-helper.js";
-import { renderSvg } from "./ems-svg-helper.js";
+  addSwitchTime,
+  removeSwitchTime,
+} from "./ems-service-helper";
+import { renderSvg } from "./ems-svg-helper";
+import { SwitchTime, Program, EmsCard } from "./ems-card"
+import { Hass, CustomWindow } from "./home-assistant"
+
+const haWindow: CustomWindow = window as unknown as CustomWindow;
+
 
 // All CSS styles
 const cssStyles = css`
@@ -37,7 +45,11 @@ const cssStyles = css`
 `;
 
 // Renders a Home Assistant button with text (used multiple times)
-function renderButton(text, clickHandler, disabled = false) {
+function renderButton(
+  text: string,
+  clickHandler: (e: Event) => void,
+  disabled: boolean = false
+): TemplateResult {
   return html`
     <mwc-button
       class="in-container"
@@ -51,46 +63,34 @@ function renderButton(text, clickHandler, disabled = false) {
 }
 
 // Define main class for card
-class EmsProgramCard extends LitElement {
-  // Return CSS styles for card
-  static get styles() {
-    return cssStyles;
-  }
+@customElement(import.meta.env.VITE_HA_CARD_ID)
+export class EmsProgramCard extends LitElement implements EmsCard {
+  // Load custom styles to card
+  static styles: CSSResultGroup = cssStyles;
 
   // Return class properties
-  static get properties() {
-    return {
-      _hass: {},
-      config: {},
-      program: { type: Object },
-      programNew: { type: Object },
-      switchtime: { type: Object },
-      isRunning: { type: Boolean },
-      isSelected: { type: Boolean },
-      statusMessage: { type: String },
-      dayIds: { type: Array },
-      dayNames: { type: Array },
-      isDebugMode: { type: Boolean }
-    };
-  }
+  @property({ attribute: false }) public _hass!: Hass;
+  @property({ attribute: false }) public config: any;
+  @state() public program?: Program;
+  @state() public programNew?: Program;
+  @state() public switchTime: SwitchTime = {
+    day: "mo",
+    hour: "07",
+    minute: "00",
+    state: true,
+    idx: -1,
+    secondsSinceMidnight: -1,
+  };
+  @state() public isRunning = false;
+  @state() public isSelected = false;
+  @state() public statusMessage = "";
+  @state() public dayIds: string[] = [];
+  @state() public dayNames: string[] = [];
+  @state() public isDebugMode = false;
 
   // Create card
   constructor() {
     super();
-    this.program = undefined;
-    this.programNew = undefined;
-    this.statusMessage = "";
-    this.isRunning = false;
-
-    // Data for selecting or adding switch time
-    this.isSelected = false;
-    this.switchtime = {
-      day: "mo",
-      hour: "07",
-      minute: "00",
-      state: true,
-      idx: -1,
-    };
 
     // Checks whether program runs in debug mode
     const urlParams = new URLSearchParams(window.location.search);
@@ -98,14 +98,14 @@ class EmsProgramCard extends LitElement {
   }
 
   // Handle all config parameters
-  setConfig(config) {
+  setConfig(config: any): void {
     // Clone config for adding some values if not present
     this.config = { ...config };
     this.config.title ??= "EMS";
   }
 
   // Hass method which is regularly called by HA
-  set hass(hass) {
+  set hass(hass: Hass) {
     this._hass = hass;
 
     // Load program if was not loaded before
@@ -130,13 +130,13 @@ class EmsProgramCard extends LitElement {
     loadTranslations(this._hass.locale.language);
   }
 
-  // Returns the height of the card
-  getCardSize() {
+  // Define size of card
+  getCardSize(): number {
     return 5;
   }
 
   // Main render method
-  render() {
+  render(): TemplateResult {
     if (!this.config.entity_id) {
       return html`<ha-card header="${this.config.title}">
         <div class="card-content">
@@ -144,65 +144,67 @@ class EmsProgramCard extends LitElement {
           <pre><code>
             type: custom:ems-program-card
             title: Program Buderus
-            entity_id: text.thermostat_hc1_switchtime1
+            entity_id: text.thermostat_hc1_switchTime1
           </code></pre>
         </div>
       </ha-card> `;
     }
-    const timeStr = this.switchtime.hour + ":" + this.switchtime.minute;
+    const timeStr = this.switchTime.hour + ":" + this.switchTime.minute;
     return html`<ha-card header="${this.config.title}">
       <div class="card-content">
         <div class="row">
           <ha-select style="width: 200px;"
             .naturalmenuwidth=${false}
-            @change="${(e) => {
-        this.switchtime.day = e.target.value;
-      }}"
-            class="in-container"
-          >
+            @change="${(e: Event) => {
+        const value = (e?.target as HTMLSelectElement)?.value;
+        if (value) {
+          this.switchTime.day = value;
+        }
+      }}" class="in-container">
             ${Object.entries(this.dayIds).map(
         ([idx, id]) => html`<ha-list-item
                 value="${String(id)}"
                 role="option"
-                ?selected="${this.switchtime.day == id}"
+                ?selected="${this.switchTime.day == id}"
               >
-                ${this.dayNames[idx]}
+                ${this.dayNames[Number(idx)]}
               </ha-list-item>`
       )}
           </ha-select>
           <ha-time-input
             .locale=${this._hass.locale}
             .value=${timeStr}
-            @change="${(e) => {
-        const [hour, minute] = e.target.value.split(":");
-        let hourNum = Number(hour);
-        if (!(hourNum >= 0 && hourNum <= 23)) {
-          hourNum = 0;
+            @change="${(e: Event) => {
+        const value = (e?.target as HTMLInputElement)?.value;
+        if (value) {
+          const [hour, minute] = value.split(":");
+          let hourNum = Number(hour);
+          if (!(hourNum >= 0 && hourNum <= 23)) {
+            hourNum = 0;
+          }
+          let minuteNum = Number(minute);
+          if (!(minuteNum >= 0 && minuteNum <= 59)) {
+            minuteNum = 0;
+          }
+          minuteNum = Math.floor(minuteNum / 10) * 10;
+          this.switchTime.hour = String(hourNum).padStart(2, "0");
+          this.switchTime.minute = String(minuteNum).padStart(2, "0");
+          this.requestUpdate();
         }
-        let minuteNum = Number(minute);
-        if (!(minuteNum >= 0 && minuteNum <= 59)) {
-          minuteNum = 0;
-        }
-        minuteNum = Math.floor(minuteNum / 10) * 10;
-        this.switchtime.hour = String(hourNum).padStart(2, "0");
-        this.switchtime.minute = String(minuteNum).padStart(2, "0");
-        this.requestUpdate();
       }}"
-            class="in-container"
-          ></ha-time-input>
+            class="in-container"></ha-time-input>
           <ha-checkbox
-            .checked=${this.switchtime.state}
-            @change="${(e) => {
-        this.switchtime.state = !this.switchtime.state;
+            .checked=${this.switchTime.state}
+            @change="${(_: Event) => {
+        this.switchTime.state = !this.switchTime.state;
       }}"
-            class="in-container"
-          ></ha-checkbox>
+            class="in-container"></ha-checkbox>
         </div>
         <div class="row">
           ${renderButton(
         localize("ui.card.ems_program_card.new"),
         () => {
-          addSwitchtime(this.programNew, this.switchtime);
+          addSwitchTime(this);
           storeProgram(this);
           this.requestUpdate();
         },
@@ -212,7 +214,7 @@ class EmsProgramCard extends LitElement {
         localize("ui.card.ems_program_card.delete"),
         () => {
           this.isSelected = false;
-          removeSwitchtime(this.programNew, this.switchtime);
+          removeSwitchTime(this);
           storeProgram(this);
           this.requestUpdate();
         },
@@ -222,8 +224,8 @@ class EmsProgramCard extends LitElement {
         localize("ui.card.ems_program_card.change"),
         () => {
           this.isSelected = false;
-          removeSwitchtime(this.programNew, this.switchtime);
-          addSwitchtime(this.programNew, this.switchtime);
+          removeSwitchTime(this);
+          addSwitchTime(this);
           storeProgram(this);
           this.requestUpdate();
         },
@@ -238,17 +240,21 @@ class EmsProgramCard extends LitElement {
         : html`<div class="row">
                 ${localize("ui.card.ems_program_card.advice")}
               </div>
-              ${renderSvg(this, (e) => {
-          const [wdId, idx] = e.target.id.split("-");
-          const selectedSt = this.programNew[wdId][idx];
-          this.isSelected = true;
-          this.switchtime = {
-            day: wdId,
-            hour: selectedSt.hour,
-            minute: selectedSt.minute,
-            state: selectedSt.state,
-            idx: idx,
-          };
+              ${renderSvg(this, (e: Event) => {
+          const id = (e?.target as HTMLElement)?.id;
+          if (id && this.programNew) {
+            const [wdId, idx] = id.split("-");
+            const selectedSt = this.programNew[wdId][Number(idx)];
+            this.isSelected = true;
+            this.switchTime = {
+              day: wdId,
+              hour: selectedSt.hour,
+              minute: selectedSt.minute,
+              state: selectedSt.state,
+              idx: Number(idx),
+              secondsSinceMidnight: -1,
+            };
+          }
         })}`}
 
         <div class="row">
@@ -281,7 +287,7 @@ class EmsProgramCard extends LitElement {
           },
           this.isRunning
         )}
-          ${renderButton(
+          ${this.isDebugMode ? renderButton(
           localize("ui.card.ems_program_card.reset"),
           () => {
             this.isSelected = false;
@@ -289,7 +295,7 @@ class EmsProgramCard extends LitElement {
             this.requestUpdate();
           },
           this.isRunning
-        )}
+        ) : html``}
         </div>
 
         <div class="row message">
@@ -300,41 +306,39 @@ class EmsProgramCard extends LitElement {
   }
 
   // Set config editor card
-  static getConfigElement() {
+  static getConfigElement(): any {
     return document.createElement(import.meta.env.VITE_HA_CARD_EDITOR_ID);
   }
 }
 
-// Register card
-customElements.define(import.meta.env.VITE_HA_CARD_ID, EmsProgramCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
+// Add readable name to card
+haWindow.customCards = haWindow.customCards || [];
+haWindow.customCards.push({
   type: import.meta.env.VITE_HA_CARD_ID,
   name: "EMS Program Card",
 });
 
 // Graphical editor for configuration
-class EmsProgramCardEditor extends LitElement {
-  // Return CSS styles for card
-  static get styles() {
-    return cssStyles;
-  }
+@customElement(import.meta.env.VITE_HA_CARD_EDITOR_ID)
+export class EmsProgramCardEditor extends LitElement {
+  // Load custom styles to card
+  static styles: CSSResultGroup = cssStyles;
 
   // Return class properties
-  static get properties() {
-    return {
-      _hass: {},
-      config: {},
-    };
-  }
+  @property({ attribute: false }) public _hass!: Hass;
+  @state() private _config: any;
+  @state() private entityIdList?: string[];
+  @state() private isDebugMode: boolean = false;
 
   // Sets the configuration
-  setConfig(config) {
+  setConfig(config: any): void {
     this._config = config;
+    const urlParams = new URLSearchParams(window.location.search);
+    this.isDebugMode = urlParams.has("debug") && urlParams.get("debug") === "1";
   }
 
   // Hass method which is regularly called by HA
-  set hass(hass) {
+  set hass(hass: Hass) {
     this._hass = hass;
     if (!this.entityIdList) {
       this.entityIdList = Object.keys(hass.states).filter((key) =>
@@ -347,17 +351,17 @@ class EmsProgramCardEditor extends LitElement {
   }
 
   // Deal with config changes
-  configChanged(newConfig) {
-    const event = new Event("config-changed", {
+  private configChanged(newConfig: any): void {
+    const event = new CustomEvent<{ config: any }>("config-changed", {
+      detail: { config: newConfig },
       bubbles: true,
       composed: true,
     });
-    event.detail = { config: newConfig };
     this.dispatchEvent(event);
   }
 
   // Render config card
-  render() {
+  render(): TemplateResult {
     return html`
       <div class="row">
         ${localize("ui.card.ems_program_card.editor.help_text")}
@@ -367,10 +371,13 @@ class EmsProgramCardEditor extends LitElement {
           label="${localize("ui.card.ems_program_card.editor.title")}"
           .value=${this._config.title}
           class="in-container"
-          @click="${(e) => {
+          @click="${(e: Event) => {
         const newConfig = Object.assign({}, this._config);
-        newConfig.title = e.target.value;
-        this.configChanged(newConfig);
+        const value = (e?.target as HTMLInputElement)?.value;
+        if (value) {
+          newConfig.title = value;
+          this.configChanged(newConfig);
+        }
       }}"
         ></ha-textfield>
         <ha-entity-picker
@@ -381,17 +388,15 @@ class EmsProgramCardEditor extends LitElement {
       )}
           .label="${localize("ui.card.ems_program_card.editor.entity")}"
           class="in-container"
-          @change="${(e) => {
+          @change="${(e: Event) => {
         const newConfig = Object.assign({}, this._config);
-        newConfig.entity_id = e.target.value;
-        this.configChanged(newConfig);
-      }}"
-          allow-custom-entity
-        ></ha-entity-picker>
+        const value = (e?.target as HTMLInputElement)?.value;
+        if (value) {
+          newConfig.entity_id = value;
+          this.configChanged(newConfig);
+        }
+      }}" allow-custom-entity></ha-entity-picker>
       </div>
     `;
   }
 }
-
-// Register config editor
-customElements.define(import.meta.env.VITE_HA_CARD_EDITOR_ID, EmsProgramCardEditor);

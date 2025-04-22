@@ -1,12 +1,13 @@
-import { svg } from "https://unpkg.com/lit-element@3.3.3/lit-element.js?module";
+import { svg } from "lit";
+import { SwitchTime, Program, EmsCard } from "./ems-card"
 
 // Constants for SVG
 const offY = 30;
 const onY = 0;
 const secondsToPx = 240 / 86400;
 
-// Returns whether the last state value of a programm is low or high
-function getLastState(dayIds, program) {
+// Returns whether the last state value of a program is low or high
+function getLastState(dayIds: string[], program: Program): number {
   const lastState = dayIds.reverse().some((wdId) => {
     const stList = program[wdId];
     return stList.length > 0 ? stList[stList.length - 1].state : false;
@@ -15,7 +16,11 @@ function getLastState(dayIds, program) {
 }
 
 // Renders the SVG contents
-export function renderSvg(card, dotClickHandler) {
+export function renderSvg(card: EmsCard, dotClickHandler: (e: Event) => void) {
+  if (!card.program || !card.programNew) {
+    return;
+  }
+
   // Calculate last program point for old and new
   let lastState = { value: getLastState(card.dayIds, card.program) };
   let lastStateNew = { value: getLastState(card.dayIds, card.programNew) };
@@ -37,9 +42,7 @@ export function renderSvg(card, dotClickHandler) {
             <g transform="translate(2, 15) rotate(-90)"
                 font-size="7px" font-family="sans-serif" fill="grey"
                 dominant-baseline="start" text-anchor="middle">
-                ${Array.from({ length: 12 }, (_, i) =>
-                  renderSvgTimes(i, card._hass.locale.language)
-                )}
+                ${Array.from({ length: 12 }, (_, i) => renderSvgTimes(i, card._hass.locale.language))}
             </g>
         </g>
     </defs>
@@ -47,28 +50,23 @@ export function renderSvg(card, dotClickHandler) {
     <g transform="translate(130, 13)"
         font-size="10px" font-family="sans-serif" fill="gray"
         dominant-baseline="start" text-anchor="middle">
-        ${Object.entries(card.dayNames).map(
-          ([idx, wdName]) => svg`
-          <text y="${idx * 50}">${wdName}</text>
-        `
-        )}
+        ${Object.entries(card.dayNames).map(([idx, wdName]) => svg`
+          <text y="${+idx * 50}">${wdName}</text>
+        `)}
     </g>
 
     <g transform="translate(10, 20)">
-      ${Object.entries(card.dayIds).map(
-        ([idx, wdId]) => svg`
-        <use xlink:href="#weekday_grid" y="${idx * 50}" />
-      `
-      )}
+      ${Object.entries(card.dayIds).map(([idx, _]) => svg`
+        <use xlink:href="#weekday_grid" y="${+idx * 50}" />
+      `)}
     </g>
 
     ${Object.entries(card.dayIds).map(([idx, wdId]) =>
-      renderSvgLines(card.program, idx, wdId, "rgb(71,108,149)", lastState)
-    )}
+    renderSvgLines(card.program, Number(idx), wdId, "rgb(71,108,149)", lastState))}
     ${Object.entries(card.dayIds).map(([idx, wdId]) =>
       renderSvgLines(
         card.programNew,
-        idx,
+        Number(idx),
         wdId,
         "rgb(149,108,71)",
         lastStateNew
@@ -76,10 +74,10 @@ export function renderSvg(card, dotClickHandler) {
     )}
     ${Object.entries(card.dayIds).map(
       ([idx, wdId]) => svg`
-      <g transform="translate(10, ${20 + idx * 50})" fill="red">
-        ${Object.entries(card.programNew[wdId]).map(([idxDot, st]) =>
-          renderSvgDots(wdId, idxDot, st, dotClickHandler)
-        )}
+      <g transform="translate(10, ${20 + +idx * 50})" fill="red">
+        ${card.programNew ? Object.entries(card.programNew[wdId]).map(([idxDot, st]) =>
+        renderSvgDots(wdId, Number(idxDot), st, dotClickHandler)
+      ) : svg``}
       </g>
     `
     )}
@@ -87,7 +85,7 @@ export function renderSvg(card, dotClickHandler) {
 }
 
 // Renders the SVG times
-function renderSvgTimes(i, locale) {
+function renderSvgTimes(i: number, locale: string) {
   const timeObj = new Date(0, 0, 0, 1 + i * 2, 0);
   const formattedTime = timeObj.toLocaleTimeString(locale, {
     hour: "2-digit",
@@ -96,8 +94,18 @@ function renderSvgTimes(i, locale) {
   return svg`<text y="${10 + i * 20}">${formattedTime}</text>`;
 }
 
-// Creates an SVG line drawing switchtimes for a weekday
-function renderSvgLines(program, idx, wdId, color, lastState) {
+// Creates an SVG line drawing switch times for a weekday
+function renderSvgLines(
+  program: Program | undefined,
+  idx: number,
+  wdId: string,
+  color: string,
+  lastState: { value: number }
+) {
+  if (!program) {
+    return svg``;
+  }
+
   let lastY = lastState.value;
   let points = `0,${lastY}`;
   for (const st of program[wdId]) {
@@ -123,7 +131,12 @@ function renderSvgLines(program, idx, wdId, color, lastState) {
 }
 
 // Renders clickable dot for new program
-function renderSvgDots(wdId, idxDot, st, dotClickHandler) {
+function renderSvgDots(
+  wdId: string,
+  idxDot: number,
+  st: SwitchTime,
+  dotClickHandler: (e: Event) => void
+) {
   const stX = Math.floor(st.secondsSinceMidnight * secondsToPx);
   let stY = offY;
   if (st.state) {

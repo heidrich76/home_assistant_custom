@@ -6,10 +6,9 @@ export default {
     },
   },
   build: {
-    target: 'esnext',
     minify: 'terser',
     lib: {
-      entry: 'src/ems-program-card-dev.js',
+      entry: 'src/ems-program-card-dev.ts',
       formats: ['es'],
       fileName: () => 'ems-program-card.js',
     },

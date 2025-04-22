@@ -1,12 +1,17 @@
 {
-  "name": "simple-gallery-card",
+  "name": "ems-program-card",
   "version": "0.2.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "deploy": "copy .\\dist\\* \\\\192.168.178.74\\config\\www"
   },
   "devDependencies": {
+    "typescript": "^5.8.3",
     "vite": "^6.3.2"
+  },
+  "dependencies": {
+    "lit": "^3.3.0"
   }
 }
