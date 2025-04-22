@@ -7,6 +7,7 @@ export default {
   },
   build: {
     minify: 'terser',
+    target: 'esnext',
     lib: {
       entry: 'src/ems-program-card-dev.ts',
       formats: ['es'],
