@@ -24,8 +24,8 @@ import { renderSvg } from "./ems-svg-helper";
 import { SwitchTime, Program, EmsCard } from "./ems-card"
 import { Hass, CustomWindow } from "./home-assistant"
 
+// Define custom window including interface to HA-specific functions
 const haWindow: CustomWindow = window as unknown as CustomWindow;
-
 
 // All CSS styles
 const cssStyles = css`
@@ -187,10 +187,10 @@ export class EmsProgramCard extends LitElement implements EmsCard {
           this.requestUpdate();
         }
       }}" class="in-container"></ha-time-input>
-          <ha-checkbox
+          <ha-switch
             .checked=${this.switchTime.state}
             @change="${(_: Event) => this.switchTime.state = !this.switchTime.state}"
-            class="in-container"></ha-checkbox>
+            class="in-container"></ha-switch>
         </div>
         <div class="row">
           ${renderButton(localize("ui.card.ems_program_card.new"), () => {

@@ -143,7 +143,7 @@ function renderSvgDots(
     stY = onY;
   }
   return svg`
-      <circle id="${wdId}-${idxDot}" cx="${stX}" cy="${stY}" r="5"
+      <circle id="${wdId}-${idxDot}" cx="${stX}" cy="${stY}" r="6.5"
         @click="${dotClickHandler}" />
     `;
 }
