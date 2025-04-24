@@ -11,9 +11,13 @@ export async function loadCustomElements(): Promise<void> {
   if (!haWindow.cardHelpers) {
     haWindow.cardHelpers = await haWindow.loadCardHelpers();
   }
-  // Includes ha-time-input
-  if (!customElements.get("ha-time-input") && haWindow.cardHelpers) {
-    haWindow.cardHelpers.createRowElement({ type: "time-entity" });
+  if (haWindow.cardHelpers) {
+    if (!customElements.get("ha-time-input")) {
+      haWindow.cardHelpers.createRowElement({ type: "time-entity" });
+    }
+    if (!customElements.get("ha-select")) {
+      haWindow.cardHelpers.createRowElement({ type: "select-entity" });
+    }
   }
 }
 loadCustomElements().then(() => {

@@ -611,8 +611,13 @@ async function loadCustomElements() {
   if (!haWindow$1.cardHelpers) {
     haWindow$1.cardHelpers = await haWindow$1.loadCardHelpers();
   }
-  if (!customElements.get("ha-time-input") && haWindow$1.cardHelpers) {
-    haWindow$1.cardHelpers.createRowElement({ type: "time-entity" });
+  if (haWindow$1.cardHelpers) {
+    if (!customElements.get("ha-time-input")) {
+      haWindow$1.cardHelpers.createRowElement({ type: "time-entity" });
+    }
+    if (!customElements.get("ha-select")) {
+      haWindow$1.cardHelpers.createRowElement({ type: "select-entity" });
+    }
   }
 }
 loadCustomElements().then(() => {
