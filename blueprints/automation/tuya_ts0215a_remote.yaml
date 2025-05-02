@@ -1,20 +1,13 @@
 blueprint:
-  name: Actions for TuYa TS0215A remote device
-  description: When a button is pressed, the defined actions will be executed.
+  name: Actions for TuYa TS0215A remote (MQTT Device Trigger)
+  description: Executes defined actions when MQTT device triggers from TuYa TS0215A are received.
   domain: automation
-  source_url: blueprint:
-  name: Actions for TuYa TS0215A remote device
-  description: When a button is pressed, the defined actions will be executed.
-  domain: automation
-  source_url: https://raw.githubusercontent.com/heidrich76/home_assistant_custom/main/blueprints/automation/tuya_ts0215a_remote.yaml
   input:
-    remote:
-      name: TuYa alarm remote
-      description: Please select TuYa alarm remote device.
+    remote_device:
+      name: MQTT Device
+      description: Choose the MQTT device representing the TuYa remote.
       selector:
-        entity:
-          domain: sensor
-          multiple: false
+        device: {}
     action_1:
       name: Button A / Arm Day Zones
       description: Action for Button A / Arm Day Zones
@@ -39,69 +32,53 @@ blueprint:
       default: []
       selector:
         action: {}
+
 trigger:
-  - platform: state
-    entity_id:
-      - !input remote
+  - platform: device
+    device_id: !input remote_device
+    domain: mqtt
+    type: action
+    subtype: arm_day_zones
+    id: arm_day
+  - platform: device
+    device_id: !input remote_device
+    domain: mqtt
+    type: action
+    subtype: disarm
+    id: disarm
+  - platform: device
+    device_id: !input remote_device
+    domain: mqtt
+    type: action
+    subtype: emergency
+    id: emergency
+  - platform: device
+    device_id: !input remote_device
+    domain: mqtt
+    type: action
+    subtype: arm_all_zones
+    id: arm_all
+
 condition: []
+
 action:
   - choose:
-      - conditions: "{{ trigger.to_state.state == 'arm_day_zones' }}"
+      - conditions:
+          - condition: trigger
+            id: arm_day
         sequence: !input action_1
-      - conditions: "{{ trigger.to_state.state == 'disarm' }}"
+      - conditions:
+          - condition: trigger
+            id: disarm
         sequence: !input action_2
-      - conditions: "{{ trigger.to_state.state == 'emergency' }}"
+      - conditions:
+          - condition: trigger
+            id: emergency
         sequence: !input action_3
-      - conditions: "{{ trigger.to_state.state == 'arm_all_zones' }}"
+      - conditions:
+          - condition: trigger
+            id: arm_all
         sequence: !input action_4
-mode: parallel
-max: 10
-  input:
-    remote:
-      name: TuYa alarm remote
-      description: Please select TuYa alarm remote device.
-      selector:
-        entity:
-          domain: sensor
-          multiple: false
-    action_1:
-      name: Button A / Arm Day Zones
-      description: Action for Button A / Arm Day Zones
-      default: []
-      selector:
-        action: {}
-    action_2:
-      name: Button B / Disarm
-      description: Action for Button B / Disarm
-      default: []
-      selector:
-        action: {}
-    action_3:
-      name: Button 0 / SOS / Emergency
-      description: Action for Button 0 / SOS / Emergency
-      default: []
-      selector:
-        action: {}
-    action_4:
-      name: Button 1 / Arm All Zones
-      description: Action for Button 1 / Arm All Zones
-      default: []
-      selector:
-        action: {}
-trigger:
-  - platform: state
-    entity_id:
-      - !input remote
-condition: []
-action:
-  - choose:
-      - conditions: "{{ trigger.to_state.state == 'arm_day_zones' }}"
-        sequence: !input action_1
-      - conditions: "{{ trigger.to_state.state == 'disarm' }}"
-        sequence: !input action_2
-      - conditions: "{{ trigger.to_state.state == 'emergency' }}"
-        sequence: !input action_3
-      - conditions: "{{ trigger.to_state.state == 'arm_all_zones' }}"
-        sequence: !input action_4
+
 mode: parallel
 max: 10
