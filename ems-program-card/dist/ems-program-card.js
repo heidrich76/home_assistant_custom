@@ -608,16 +608,13 @@ const de = {
 };
 const haWindow$1 = window;
 async function loadCustomElements() {
+  var _a2, _b;
   if (!haWindow$1.cardHelpers) {
     haWindow$1.cardHelpers = await haWindow$1.loadCardHelpers();
   }
-  if (haWindow$1.cardHelpers) {
-    if (!customElements.get("ha-time-input")) {
-      haWindow$1.cardHelpers.createRowElement({ type: "time-entity" });
-    }
-    if (!customElements.get("ha-select")) {
-      haWindow$1.cardHelpers.createRowElement({ type: "select-entity" });
-    }
+  console.log("Card helpers:", haWindow$1.cardHelpers);
+  for (const control of ["date", "time", "datetime"]) {
+    await ((_b = (_a2 = haWindow$1.cardHelpers) == null ? void 0 : _a2.importMoreInfoControl) == null ? void 0 : _b.call(_a2, control));
   }
 }
 loadCustomElements().then(() => {
@@ -1046,16 +1043,16 @@ const cssStyles = i$3`
     font-style: italic;
   }
 `;
-function renderButton(text, clickHandler, disabled = false) {
+function renderButton(text, clickHandler, disabled = false, variant = "brand") {
   return x`
-    <mwc-button
+    <ha-button
       class="in-container"
-      outlined
+      appearance="plain" variant="${variant}" size="medium"
       @click="${clickHandler}"
       ?disabled=${disabled}
     >
       ${text}
-    </mwc-button>
+    </ha-button>
   `;
 }
 let EmsProgramCard = class extends i {
@@ -1226,10 +1223,9 @@ let EmsProgramCard = class extends i {
         writeToEms(this);
         this.requestUpdate();
       },
-      this.isRunning
+      this.isRunning,
+      "danger"
     )}
-        </div>
-        <div class="row">
           ${renderButton(
       localize("ui.card.ems_program_card.undo"),
       () => {

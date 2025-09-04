@@ -5,25 +5,22 @@ import { CustomWindow } from "./home-assistant";
 // Define custom window including interface to HA-specific functions
 const haWindow: CustomWindow = window as unknown as CustomWindow;
 
-// Hack from https://github.com/thomasloven/lovelace-card-tools/blob/master/src/yaml.js
-// Partially allows for loading ha custom elements
+// Loading HA custom elements
 export async function loadCustomElements(): Promise<void> {
   if (!haWindow.cardHelpers) {
     haWindow.cardHelpers = await haWindow.loadCardHelpers();
   }
-  if (haWindow.cardHelpers) {
-    if (!customElements.get("ha-time-input")) {
-      haWindow.cardHelpers.createRowElement({ type: "time-entity" });
-    }
-    if (!customElements.get("ha-select")) {
-      haWindow.cardHelpers.createRowElement({ type: "select-entity" });
-    }
+  console.log("Card helpers:", haWindow.cardHelpers);
+
+  // Load date/time controls 
+  for (const control of ["date", "time", "datetime"]) {
+    await haWindow.cardHelpers?.importMoreInfoControl?.(control);
   }
 }
+
 loadCustomElements().then(() => {
   console.log("Custom elements loaded");
 });
-
 
 // Load language for localization of card
 const translations: Record<string, any> = { en, de };

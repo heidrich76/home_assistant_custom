@@ -1,9 +1,13 @@
+export interface CardHelpers {
+  createRowElement: (config: any) => HTMLElement;
+  createCardElement?: (config: any) => HTMLElement;
+  importMoreInfoControl?: (control: string) => Promise<void>;
+}
+
 export interface CustomWindow extends Window {
-  cardHelpers?: {
-    createRowElement: (config: any) => void;
-  };
+  cardHelpers?: CardHelpers;
   customCards: Array<any>;
-  loadCardHelpers: () => Promise<any>;
+  loadCardHelpers: () => Promise<CardHelpers>;
 }
 
 export interface HassEntityState {

@@ -42,7 +42,7 @@ Add `debug=1` to URL for displaying debug messages, e.g., `http://192.168.178.74
 
 **Build** to compile all source code into a JS file:
    ```bash
-   npm run deploy
+   npm run build
    ```
 
 **Deploy** file to your Home Assistant (development) server for final testing:

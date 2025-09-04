@@ -48,17 +48,18 @@ const cssStyles = css`
 function renderButton(
   text: string,
   clickHandler: (e: Event) => void,
-  disabled: boolean = false
+  disabled: boolean = false,
+  variant: string = "brand"
 ): TemplateResult {
   return html`
-    <mwc-button
+    <ha-button
       class="in-container"
-      outlined
+      appearance="plain" variant="${variant}" size="medium"
       @click="${clickHandler}"
       ?disabled=${disabled}
     >
       ${text}
-    </mwc-button>
+    </ha-button>
   `;
 }
 
@@ -254,10 +255,8 @@ export class EmsProgramCard extends LitElement implements EmsCard {
             writeToEms(this);
             this.requestUpdate();
           },
-          this.isRunning
+          this.isRunning, "danger"
         )}
-        </div>
-        <div class="row">
           ${renderButton(
           localize("ui.card.ems_program_card.undo"),
           () => {
